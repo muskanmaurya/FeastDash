@@ -24,7 +24,8 @@ Promise<void> => {
             res.status(401).json({
                 message:"Unauthorized: token missing",
             })
-            return;        }
+            return;        
+        }
 
             const decodedValue = jwt.verify(token, process.env.JWT_SECRET_KEY as string) as JwtPayload;
 

@@ -1,7 +1,8 @@
-export interface IUser {
+export interface User {
     _id: string;
     name: string;
     email: string;
+    password?: string;
     image: string;
     role: string;
 }
@@ -12,11 +13,14 @@ export interface LocationData {
     formattedAddress: string;
 }
 
-export interface AppContextType{
+export interface AppContextType{ 
     user: User | null;
     loading: boolean;
     isAuth: boolean;
     setUser: React.Dispatch<React.SetStateAction<User | null>>;
-    setLoading: React.Dispatch<React.SetStateAction<boolean>>;
     setIsAuth: React.Dispatch<React.SetStateAction<boolean>>;
+    setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+    location: LocationData | null;
+    loadingLocation: boolean;
+    city: string;
 }
