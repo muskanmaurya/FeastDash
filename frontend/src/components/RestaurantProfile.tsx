@@ -19,6 +19,7 @@ const RestaurantProfile = ({ restaurant, isSeller, onUpdate }: props) => {
     const [isOpen, setIsOpen] = useState(restaurant.isOpen);
     const [loading, setLoading] = useState(false);
 
+    // 🟢 Function 1: Toggle operational status cleanly isolate
     const toggleOpenStatus = async () => {
         try {
             const { data } = await axios.put(`${restaurantService}/api/restaurant/status`, {
@@ -35,8 +36,9 @@ const RestaurantProfile = ({ restaurant, isSeller, onUpdate }: props) => {
             console.log("Error in toggling restaurant status: ", error);
             toast.error(error.response?.data?.message || "Error in toggling restaurant status");
         }
-    }; 
+    }; // 🟢 FIXED: Closed cleanly right here!
 
+    // 🟢 Function 2: Save metadata changes cleanly isolated
     const saveChanges = async () => {
         try {
             setLoading(true);
@@ -50,7 +52,7 @@ const RestaurantProfile = ({ restaurant, isSeller, onUpdate }: props) => {
 
             onUpdate(data.restaurant);
             toast.success(data.message);
-            setEditMode(false); 
+            setEditMode(false); // Turn off edit mode after successful save
         } catch (error: any) {  
             console.log("Error in saving restaurant changes: ", error);
             toast.error(error.response?.data?.message || "Error in updating restaurant changes");
@@ -59,7 +61,7 @@ const RestaurantProfile = ({ restaurant, isSeller, onUpdate }: props) => {
         }
     };
 
-
+    // 🟢 Component Return Layer (Main Scope)
     return (
         <div className="mx-auto max-w-xl rounded-xl bg-white shadow-sm overflow-hidden">
             {restaurant.image && (
