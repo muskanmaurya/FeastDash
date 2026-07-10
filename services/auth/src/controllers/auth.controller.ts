@@ -28,7 +28,7 @@ export const loginUser = TryCatch(async (req, res)=>{
             user = await User.create({
                 name,
                 email,
-                image: picture,
+                image: picture || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png" ,
             })
         }
 
@@ -71,5 +71,7 @@ export const addUserRole = TryCatch(async (req: AuthenticatedRequest, res)=>{
 
 export const myProfile = TryCatch(async (req: AuthenticatedRequest, res)=>{
     const user = req.user;
+
     res.status(200).json({user, message: "Profile fetched successfully"});
+
 })

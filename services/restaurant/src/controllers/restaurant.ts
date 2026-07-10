@@ -8,7 +8,10 @@ import jwt from "jsonwebtoken";
 export const addRestaurant = TryCatch(async (req: AuthenticatedRequest, res) => {
     const user = req.user;
 
-    if (!user || user.role !== "seller") { 
+    //as we know it's a restaur.. servicee where we need a seller so we need to check if thsi api is called that person is a seller or not? so we will creaet a middlewware checkpoint for isseeller
+
+
+    if (!user || user.role !== "seller") {  
         return res.status(403).json({
             message: "Unauthorized/Forbidden: Only sellers can add a restaurant",
         })
@@ -63,7 +66,7 @@ export const addRestaurant = TryCatch(async (req: AuthenticatedRequest, res) => 
         autoLocation: {
             type: "Point",
             coordinates: [Number(longitude), Number(latitude)],
-            formattedAddress: formattedAddress || "",
+            formattedAddress: formattedAddress || "", 
         },
         isVerified: false,
     })
