@@ -4,8 +4,6 @@ import { restaurantService } from "../config";
 import { toast } from "react-hot-toast";
 import { FiUploadCloud } from "react-icons/fi";
 
-
-
 const AddMenuItem = ({onItemAdded}:{onItemAdded:()=>void}) => {
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");

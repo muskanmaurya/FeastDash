@@ -7,26 +7,41 @@ import ProtectedRoute from './routes/protectedRoute';
 import SelectRole from './pages/SelectRole';
 import Navbar from './components/Navbar';
 import Account from './pages/Account';
+import { useAppData } from './context/AppContext';
+import Restaurant from './pages/Restaurant';
+import RestaurantPage from './pages/RestaurantPage';
+import Cart from './pages/Cart';
+import AddAddressPage from './pages/Address';
+import Checkout from './pages/Checkout';
 
 function App() {
+
+  const {user} = useAppData();
+
+  if (user !== null && user.role === 'seller'){
+    return <Restaurant/>;
+  }
 
   return (
     <>
     <BrowserRouter>
+      <Toaster position="top-center" reverseOrder={false} />
       <Navbar/>
        <Routes>
         <Route element = {<PublicRoute/>}>
         <Route path = '/login' element = {<Login/>}/>
         </Route>
         <Route element = {<ProtectedRoute/>}>
-        <Route path = '/' element = {<Home/>}/>
+        <Route path = '/' element = {<Home/>}/> 
+        <Route path = '/address' element = {<AddAddressPage/>}/> 
+        <Route path = '/checkout' element = {<Checkout/>}/> 
+        <Route path = '/restaurant/:id' element = {<RestaurantPage/>}/> 
+        <Route path = '/cart' element = {<Cart/>}/> 
         <Route path = '/select-role' element = {<SelectRole/>}/>
         <Route path = '/account' element = {<Account/>}/>
         </Route>
        </Routes>
-       <Toaster/>
     </BrowserRouter>
-
     </>
   )
 }

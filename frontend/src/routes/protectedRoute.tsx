@@ -2,7 +2,7 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAppData } from "../context/AppContext";
 
 const ProtectedRoute = ()=>{
-    const {isAuth, user, loading} = useAppData();
+    const {isAuth, user, loading} = useAppData();    
 
     const location = useLocation();
     

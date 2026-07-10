@@ -36,9 +36,9 @@ const RestaurantProfile = ({ restaurant, isSeller, onUpdate }: props) => {
             console.log("Error in toggling restaurant status: ", error);
             toast.error(error.response?.data?.message || "Error in toggling restaurant status");
         }
-    }; // 🟢 FIXED: Closed cleanly right here!
+    }; 
 
-    // 🟢 Function 2: Save metadata changes cleanly isolated
+    // Save metadata changes cleanly isolated
     const saveChanges = async () => {
         try {
             setLoading(true);
@@ -61,7 +61,6 @@ const RestaurantProfile = ({ restaurant, isSeller, onUpdate }: props) => {
         }
     };
 
-    // 🟢 Component Return Layer (Main Scope)
     return (
         <div className="mx-auto max-w-xl rounded-xl bg-white shadow-sm overflow-hidden">
             {restaurant.image && (
@@ -89,6 +88,10 @@ const RestaurantProfile = ({ restaurant, isSeller, onUpdate }: props) => {
                             <BiEdit size={18} />
                         </button>
                     </div>
+                )}
+
+                {!isSeller && (
+                    <h2 className="text-xl font-semibold">{name}</h2>
                 )}
                 
                 {editMode ? (

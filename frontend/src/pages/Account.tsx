@@ -5,7 +5,7 @@ import { FiBox, FiLogOut, FiMapPin } from 'react-icons/fi';
 
 const Account = () => {
     const {user, setUser, setIsAuth} = useAppData(); // Access user data and authentication state from context
-
+   
     const firstLetter = user?.name?.charAt(0).toUpperCase(); // Get the first letter of the user's name or default to "U" if user is null
     
     const navigate = useNavigate();
@@ -20,7 +20,7 @@ const Account = () => {
   return (
     <div className="flex min-h-[80vh] items-center justify-center bg-gray-50/50 p-6 font-sans">
       
-      {/* 🟢 Main Profile Card Box Container */}
+      {/* Main Profile Card Box Container */}
       <div className="w-full max-w-sm overflow-hidden rounded-xl border border-gray-100 bg-white shadow-xl transition-all duration-300 hover:shadow-2xl">
         
         {/* SECTION 1: User Identity Details Header Block */}
@@ -32,10 +32,10 @@ const Account = () => {
           {/* Name and Email layout stack */}
           <div className="flex flex-col min-w-0">
             <h2 className="truncate text-base font-semibold text-gray-800">
-              {user?.name || "Misa M"}
+              {user?.name}
             </h2>
             <p className="truncate text-xs text-gray-400">
-              {user?.email || "misa@misa.com"}
+              {user?.email}
             </p>
           </div>
         </div>
