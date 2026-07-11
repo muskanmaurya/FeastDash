@@ -190,3 +190,9 @@ export const fetchOrderForPayment = TryCatch(async (req, res: any) => {
     })
 
 })
+
+export const fetchRestaurantOrders = TryCatch(async (req: AuthenticatedRequest, res) => {
+    const user = req.user;
+
+    const {restaurnatId} = req.params;
+})

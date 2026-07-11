@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import type { ICart, IMenuItem, IRestaurant } from "../types";
 import { toast } from "react-hot-toast";
 import { BiCreditCard, BiLoader, BiStoreAlt } from "react-icons/bi";
+import {loadStripe} from '@stripe/stripe-js';
 
 interface Address {
   _id: string;
@@ -145,12 +146,31 @@ const Checkout = () => {
     }
   };
 
+  const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+
   const payWithStripe = async () => {
     try {
       setLoadingStripe(true);
       const order = await createOrder("stripe");
       if (!order) return;
-      console.log("Order created for Stripe:", order);
+
+      const {orderId} = order;
+      try{
+        const stripe = await stripePromise;
+
+        const {data} = await axios.post(`${utilsService}/api/payment/stripe/create`,{
+          orderId
+        })
+
+        if(data.url){
+          window.location.href = data.url
+        }else {
+          toast.error("Failed to initiate Stripe payment. Please try again.");
+        }
+      }catch(error){
+        console.error("Error initiating Stripe payment:", error);
+        toast.error("Error initiating Stripe payment. Please try again.");
+      }
     } catch (error) {
       toast.error("Error initializing Stripe. Please try again.");
       console.error("Error initializing Stripe:", error);

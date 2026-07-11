@@ -13,6 +13,8 @@ import RestaurantPage from './pages/RestaurantPage';
 import Cart from './pages/Cart';
 import AddAddressPage from './pages/Address';
 import Checkout from './pages/Checkout';
+import PaymentSuccess from './pages/PaymentSuccess';
+import OrderSuccess from './pages/OrderSuccess';
 
 function App() {
 
@@ -33,6 +35,8 @@ function App() {
         </Route>
         <Route element = {<ProtectedRoute/>}>
         <Route path = '/' element = {<Home/>}/> 
+        <Route path = '/ordersuccess' element = {<OrderSuccess/>}/> 
+        {/* <Route path = '/paymentsuccess/:paymentId' element = {<PaymentSuccess/>}/>  */}
         <Route path = '/address' element = {<AddAddressPage/>}/> 
         <Route path = '/checkout' element = {<Checkout/>}/> 
         <Route path = '/restaurant/:id' element = {<RestaurantPage/>}/> 
