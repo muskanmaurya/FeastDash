@@ -1,5 +1,6 @@
 import { getChannel } from "./rabbitMQ.js";
 import Order from "../models/OrderModel.js";
+import axios from "axios";
 
 export const startPaymentConsumer = async () => {
     const channel = getChannel();
@@ -42,6 +43,22 @@ export const startPaymentConsumer = async () => {
             console.log(`✅Payment successful for order ${orderId}. Order status updated to 'placed'.`);
 
             //socket work 
+            await axios.post(`${process.env.REALTIME_SERVICE}/api/v1/internal/emit`, {
+        event: "order:new",
+        room: `restaurant:${order.restaurantId}`,
+        payload: {
+            orderId: order._id,
+        }
+    },
+        {
+            headers: {
+                "x-internal-key": process.env.INTERNAL_SERVICE_KEY
+            }
+        })
+
+        //now assign riders
+
+        
 
             channel.ack(msg);
 

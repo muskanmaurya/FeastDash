@@ -7,6 +7,7 @@ import RestaurantProfile from '../components/RestaurantProfile';
 import MenuItems from '../components/MenuItems';
 import AddMenuItem from '../components/AddMenuItem';
 import { toast } from 'react-hot-toast/headless';
+import RestaurantOrders from '../components/RestaurantOrders';
 
 type SellerTab = "menu" | "add-item" | "sales";
 
@@ -29,7 +30,6 @@ const Restaurant = () => {
         }
       });
 
-      // Explicit check: Agar success false hai ya restaurant null hai, explicitly set null
       if (data && data.restaurant) {
         setRestaurant(data.restaurant);
       } else {
@@ -38,7 +38,7 @@ const Restaurant = () => {
 
       if (data.token) {
         localStorage.setItem("token", data.token);
-        window.location.reload(); // 🔥 Force reload to ensure the new token is used in subsequent requests
+        window.location.reload(); 
       }
 
     } catch (error) {
@@ -57,7 +57,6 @@ const Restaurant = () => {
         }
       });
 
-      // 🟢 Extract the 'items' array key from backend envelope safely with fallback
       setMenuItems(data.items || []);
 
     } catch (error: any) {
@@ -83,10 +82,6 @@ const Restaurant = () => {
     </div>
   }
 
-  // if (!restaurant) {
-  //   return <AddRestaurant />
-  // }
-
   if (!restaurant || restaurant === null) {
     return <AddRestaurant fetchMyRestaurant={fetchMyRestaurant} />;
   }
@@ -95,6 +90,8 @@ const Restaurant = () => {
     <RestaurantProfile restaurant={restaurant} onUpdate={setRestaurant} isSeller={true} />
 
     <div className="bg-white p-4 shadow space-y-4 rounded-2xl shadow-gray-300">
+      
+      <RestaurantOrders restaurantId={restaurant._id} />
       <div className="flex items-center justify-around border-b">
         {[
           { key: "menu", label: "Menu Items" },
