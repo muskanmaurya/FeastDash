@@ -35,30 +35,30 @@ export const startPaymentConsumer = async () => {
                     new: true
                 })
 
-                if(!order){
-                    channel.ack(msg);
-                    return;
-                }
+            if (!order) {
+                channel.ack(msg);
+                return;
+            }
 
             console.log(`✅Payment successful for order ${orderId}. Order status updated to 'placed'.`);
 
             //socket work 
             await axios.post(`${process.env.REALTIME_SERVICE}/api/v1/internal/emit`, {
-        event: "order:new",
-        room: `restaurant:${order.restaurantId}`,
-        payload: {
-            orderId: order._id,
-        }
-    },
-        {
-            headers: {
-                "x-internal-key": process.env.INTERNAL_SERVICE_KEY
-            }
-        })
+                event: "order:new",
+                room: `restaurant:${order.restaurantId}`,
+                payload: {
+                    orderId: order._id,
+                }
+            },
+                {
+                    headers: {
+                        "x-internal-key": process.env.INTERNAL_SERVICE_KEY
+                    }
+                })
 
-        //now assign riders
+            //now assign riders
 
-        
+
 
             channel.ack(msg);
 

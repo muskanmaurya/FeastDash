@@ -5,6 +5,7 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import { FiSave } from "react-icons/fi";
 import { BiEdit, BiMapPin } from "react-icons/bi";
+import { useAppData } from "../context/AppContext";
 
 interface props { 
     restaurant: IRestaurant; 
@@ -19,7 +20,7 @@ const RestaurantProfile = ({ restaurant, isSeller, onUpdate }: props) => {
     const [isOpen, setIsOpen] = useState(restaurant.isOpen);
     const [loading, setLoading] = useState(false);
 
-    // 🟢 Function 1: Toggle operational status cleanly isolate
+    // Toggle operational status cleanly isolate
     const toggleOpenStatus = async () => {
         try {
             const { data } = await axios.put(`${restaurantService}/api/restaurant/status`, {
@@ -60,6 +61,22 @@ const RestaurantProfile = ({ restaurant, isSeller, onUpdate }: props) => {
             setLoading(false);
         }
     };
+
+    const {setIsAuth, setUser} = useAppData();
+
+    const logoutHandler = async () => {
+        await axios.put(`${restaurantService}/api/restaurant/status`, {
+                status: false
+            }, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                }
+        });
+        localStorage.removeItem("token");
+        setIsAuth(false);
+        setUser(null);
+        toast.success("Logged out successfully");
+    }
 
     return (
         <div className="mx-auto max-w-xl rounded-xl bg-white shadow-sm overflow-hidden">
@@ -120,11 +137,19 @@ const RestaurantProfile = ({ restaurant, isSeller, onUpdate }: props) => {
                                 onClick={toggleOpenStatus} 
                                 className={`rounded-lg px-4 py-1.5 font-medium cursor-pointer text-sm border shadow-sm transition-all ${
                                     isOpen 
-                                        ? "text-red-500 border-red-200 hover:bg-red-50" 
+                                        ? "text-red-500 border-red-200 hover:bg-red-500 hover:border-red-600 hover:text-white" 
                                         : "text-white border-green-600 bg-green-500 hover:bg-green-600"
                                 }`}
                             >
                                 {isOpen ? "Close Restaurant" : "Open Restaurant"}
+                            </button>
+                        )}
+                        {isSeller && (
+                            <button 
+                                onClick={logoutHandler} 
+                                className={`rounded-lg px-4 py-1.5 font-medium cursor-pointer text-sm border shadow-sm transition-all text-red-500 border-red-200 hover:bg-red-500 hover:border-red-600 hover:text-white`}
+                            >
+                                Logout
                             </button>
                         )}
                     </div>

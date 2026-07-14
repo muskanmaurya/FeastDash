@@ -6,6 +6,7 @@ import { IMenuItem } from "../models/MenuItems.js";
 import Restaurant, { IRestaurant } from "../models/Restaurant.js";
 import Order from "../models/OrderModel.js";
 import axios from "axios";
+import { publishEvent } from "../config/order.publisher.js";
 
 
 export const createOrder = TryCatch(async (req: AuthenticatedRequest, res: any) => {
@@ -293,6 +294,25 @@ export const updateOrderStatus = TryCatch(async (req: AuthenticatedRequest, res)
         })
 
         //now assign riders
+        if(status === "ready-for-rider"){
+            console.log(
+                "Publishing Order ready fr rider event for order", 
+                order._id
+            );
+            await publishEvent("ORDER_READY_FOR_RIDER",{
+                orderId: order._id.toString(),
+                restaurantId: restaurant._id.toString(),
+                location: restaurant.autoLocation,
+            });
+
+            console.log("Event published successfully")
+        }
+
+
+
+
+
+
 
         res.json({
             message: "Order status updated successfully",

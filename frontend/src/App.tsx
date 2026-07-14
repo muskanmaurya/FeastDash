@@ -15,13 +15,23 @@ import AddAddressPage from './pages/Address';
 import Checkout from './pages/Checkout';
 import OrderSuccess from './pages/OrderSuccess';
 import Orders from './pages/Orders';
+import OrderPage from './pages/OrderPage';
+import RiderDashboard from './pages/RiderDashboard';
 
 function App() {
 
-  const {user} = useAppData();
+  const {user, loading} = useAppData();
+
+  if(loading) {
+    return <div className="text-center py-60 font-bold">Loading...</div>;
+  }
 
   if (user !== null && user.role === 'seller'){
     return <Restaurant/>;
+  }
+
+  if (user && user.role === 'rider'){
+    return <RiderDashboard/>;
   }
 
   return (
@@ -36,6 +46,7 @@ function App() {
         <Route element = {<ProtectedRoute/>}>
         <Route path = '/' element = {<Home/>}/> 
         <Route path = '/orders' element = {<Orders/>}/> 
+        <Route path = '/orders/:id' element = {<OrderPage/>}/> 
         <Route path = '/ordersuccess' element = {<OrderSuccess/>}/> 
         <Route path = '/address' element = {<AddAddressPage/>}/> 
         <Route path = '/checkout' element = {<Checkout/>}/> 
