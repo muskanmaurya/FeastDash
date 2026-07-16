@@ -5,19 +5,14 @@ import morgan from "morgan";
 import connectDB from "./config/db.js";
 import riderRoutes from "./routes/riderRoutes.js";
 import { connectRabbitMQ } from "./config/rabbitmq.js";
+import { startOrderReadyConsumer } from "./config/orderReady.consumer.js";
 
 dotenv.config();
 
 await connectRabbitMQ();
+startOrderReadyConsumer(); 
 
 const app = express();
-
-// app.use(cors({
-//     origin: "http://localhost:5173", // Exact matches with your frontend port
-//     credentials: true,
-//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-//     allowedHeaders: ["Content-Type", "Authorization"]
-// }));
 
 
 app.use(express.json());

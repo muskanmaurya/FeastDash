@@ -7,8 +7,6 @@ import axios from "axios"
 
 const ACTIVE_STATUSES = ['placed', 'accepted', 'preparing', 'ready-for-rider', 'rider-assigned', 'picked-up']
 
-
-
 const Orders = () => {
   const navigate = useNavigate()
   const [orders, setOrders] = useState<IOrder[]>([])
@@ -46,11 +44,14 @@ const Orders = () => {
     }
 
     socket.on("order:update", onOrderUpdate);
+    socket.on("order:rider-assigned", onOrderUpdate);
 
     return ()=>{
       socket.off("order:update", onOrderUpdate)
+      socket.off("order:rider-assigned", onOrderUpdate);
     }
   },[socket])
+
 
   if(loading){
     return <p className="text-center text-gray-500">Loading orders...</p>

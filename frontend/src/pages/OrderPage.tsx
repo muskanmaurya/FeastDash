@@ -5,6 +5,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import type { IOrder } from "../types";
 import { BiCheckCircle, BiMap, BiReceipt, BiTimeFive } from "react-icons/bi";
+import UserOrderMap from "../components/UserOrderMap";
 
 const statusConfig = (status: string) => {
   switch (status) {
@@ -23,6 +24,7 @@ const OrderPage = () => {
     const { socket } = useSocket();
     const [order, setOrder] = useState<IOrder | null>(null);
     const [loading, setLoading] = useState(true);
+    
 
     const fetchOrder = async () => {
         try {
@@ -51,11 +53,44 @@ const OrderPage = () => {
         };
 
         socket.on("order:update", onOrderUpdate);
+        socket.on("order:rider-assigned", onOrderUpdate);
+
 
         return () => {
             socket.off("order:update", onOrderUpdate);
+            socket.off("order:rider-assigned", onOrderUpdate);
         };
     }, [socket]);
+
+    
+    useEffect(()=>{
+        if (!socket || !id) return;
+        
+        socket.emit("join", `user:${id}`);
+        
+        return () =>{
+            socket.emit("leave", `user:${id}`)
+        }
+    },[socket, id])
+
+
+    const [riderLocation, setRiderLocation] = useState<[number, number] | null>(null);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const onRiderLocation = ({ latitude, longitude }: any) => {
+            console.log("Rider Location received:", latitude, longitude);
+            setRiderLocation([latitude, longitude]); 
+        };
+
+        socket.on("rider:location", onRiderLocation);
+
+        return () => {
+            socket.off("rider:location", onRiderLocation);
+        };
+    }, [socket]);
+
 
     if (loading) {
         return (
@@ -79,6 +114,9 @@ const OrderPage = () => {
     const deliveryFee = order.deliveryFee ?? (subTotal < 250 ? 49 : 0);
     const platformFee = order.platformFee ?? 7;
     const grandTotal = order.totalAmount ?? (subTotal + deliveryFee + platformFee);
+
+    // console.log("Rider Location State:", riderLocation);
+    // console.log("Delivery Location:", order.deliveryAddress.latitude, order.deliveryAddress.longitude);
 
     return (
         <div className="mx-auto max-w-2xl px-4 py-8 antialiased space-y-6">
@@ -160,6 +198,13 @@ const OrderPage = () => {
                     <p className="capitalize">Payment Status: <span className={`font-bold font-mono ${order.paymentStatus === "paid" ? "text-green-600" : "text-amber-600"}`}>{order.paymentStatus || "pending"}</span></p>
                 </div>
             </div>
+            {
+                (order.status === "rider-assigned" || 
+                order.status === "picked-up") && 
+                (riderLocation ? 
+                <UserOrderMap riderLocation={riderLocation} deliveryLocation={[order.deliveryAddress.latitude!, order.deliveryAddress.longitude!]} /> : 
+                <p>Waiting for rider location...</p>)
+            }
 
         </div>
     );

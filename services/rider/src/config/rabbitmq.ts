@@ -13,6 +13,12 @@ export const connectRabbitMQ = async()=>{
         }
     );
 
+    await channel.assertQueue(process.env.ORDER_READY_QUEUE!,
+        {
+            durable: true,
+        }
+    );
+
     console.log('RabbitMQ connected to rider service');
 
 }

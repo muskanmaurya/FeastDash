@@ -51,7 +51,7 @@ export const startOrderReadyConsumer = async()=>{
                 for(const rider of riders){
                     console.log(`Notifying rider userId: ${rider.userId}`);
                     try{
-                        await axios.post(`${process.env.REALTIME_SERVICE}/api/internal/emit`, {
+                        await axios.post(`${process.env.REALTIME_SERVICE}/api/v1/internal/emit`, {
                             event: "order:available",
                             room: `user:${rider.userId}`,
                             payload:{
@@ -73,7 +73,7 @@ export const startOrderReadyConsumer = async()=>{
                 channel.ack(msg);
                 console.log("Acknowledged message");
         }catch(err){
-            console.error("Error processing order ready consumer message", err);
+            console.error("Error processing order ready consumer: ", err);
         }
     })
 }

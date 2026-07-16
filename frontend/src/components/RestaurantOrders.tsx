@@ -86,6 +86,20 @@ const RestaurantOrders = ({restaurantId}: {restaurantId: string}) => {
 
 }, [socket, restaurantId, audioUnlocked]); 
 
+    useEffect(()=>{
+        if(!socket) return;
+
+        const onUpdateOrder = () =>{
+            fetchOrders();
+        }
+
+        socket.on("order:rider-assigned", onUpdateOrder);
+
+        return ()=>{
+            socket.off("order:rider-assigned", onUpdateOrder);
+        }
+    },[socket])
+
     if(loading){
         return <p>Loading Orders...</p>
     }

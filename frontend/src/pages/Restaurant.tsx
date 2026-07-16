@@ -45,7 +45,7 @@ const Restaurant = () => {
       console.error("Error in fetching my restaurant: ", error);
       setRestaurant(null); // Fallback to safe null state on error
     } finally {
-      setLoading(false); // 🔥 This will guarantee that the loading screen strips away
+      setLoading(false); 
     }
   };
 
@@ -109,7 +109,6 @@ const Restaurant = () => {
         {tab === "sales" && <p>Sales Page</p>}
       </div>
     </div>
-
   </div>
   )
 }

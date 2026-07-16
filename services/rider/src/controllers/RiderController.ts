@@ -79,83 +79,9 @@ export const addRiderProfile = TryCatch(async (req: AuthenticatedRequest, res) =
     })
 })
 
-// export const addRiderProfile = TryCatch(async (req: AuthenticatedRequest, res) => {
-//     const user = req.user;
-
-//     if (!user) {
-//         return res.status(401).json({ message: "Unauthorized: Active session context missing" });
-//     }
-
-//     if (user.role !== "rider") {
-//         return res.status(403).json({ message: "Forbidden: Only users with the rider role can initialize profiles" });
-//     }
-
-//     const file = req.file;
-//     if (!file) {
-//         return res.status(400).json({ message: "No file uploaded, Rider profile picture is required" });
-//     }
-
-//     const fileBuffer = getBuffer(file);
-//     if (!fileBuffer?.content) {
-//         return res.status(500).json({ message: "Failed to process the uploaded file format" });
-//     }
-
-//     // 🟢 Dynamic remote upload via the Utils service configuration
-//     const uploadResponse = await axios.post(`${process.env.UTILS_SERVICE}/api/upload`, {
-//         buffer: fileBuffer.content,
-//     });
-
-//     // 🟢 Safeguard fallback to fetch the picture URL path string correctly
-//     const secureUrl = uploadResponse.data?.uploadResult?.url || uploadResponse.data?.url;
-
-//     if (!secureUrl) {
-//         console.error("❌ CLOUDINARY UPLOAD ERROR: Response structure mismatch:", uploadResponse.data);
-//         return res.status(500).json({ message: "Failed to retrieve secure URL layout from storage layers" });
-//     }
-
-//     const { name, phoneNumber, aadharNumber, drivingLicenseNumber, latitude, longitude } = req.body;
-
-//     if (!name || !phoneNumber || !aadharNumber || !drivingLicenseNumber || latitude === undefined || longitude === undefined) {
-//         return res.status(400).json({ message: "Missing required fields, All fields are required" });
-//     }
-
-//     const existingProfile = await Rider.findOne({ userId: user._id });
-//     if (existingProfile) {
-//         return res.status(400).json({ message: "Rider profile already exists for this account record" });
-//     }
-
-//     // 🟢 Parse incoming string entries explicitly to floats to pass 2dsphere indexing requirements
-//     const parsedLat = parseFloat(latitude);
-//     const parsedLng = parseFloat(longitude);
-
-//     if (isNaN(parsedLat) || isNaN(parsedLng)) {
-//         return res.status(400).json({ message: "Invalid coordinate structure values provided" });
-//     }
-
-//     // 🟢 Execute data storage transaction model mapping
-//     const riderProfile = await Rider.create({
-//         userId: user._id,
-//         name,
-//         picture: secureUrl,
-//         aadharNumber,
-//         drivingLicenseNumber,
-//         phoneNumber,
-//         location: {
-//             type: "Point",
-//             coordinates: [parsedLng, parsedLat] // Enforce clean decimal tracking parameters
-//         },
-//         isAvailable: false,
-//         isVerified: false,
-//     });
-
-//     return res.status(201).json({
-//         message: "Rider profile created successfully",
-//         riderProfile
-//     });
-// });
-
 export const fetchMyProfile = TryCatch(async (req: AuthenticatedRequest, res) => {
     const user = req.user;
+
 
     if(!user){
         return res.status(401).json({
@@ -167,10 +93,6 @@ export const fetchMyProfile = TryCatch(async (req: AuthenticatedRequest, res) =>
         userId: user._id
     })
 
-    // return res.status(200).json({
-    //     message:"Rider profile fetched successfully",
-    //     account
-    // })
 
     res.json(account);
 })
@@ -235,5 +157,149 @@ export const toggleRiderAvailability = TryCatch(async (req: AuthenticatedRequest
         message:isAvailable ? "Rider is now available" : "Rider is now unavailable",
         rider,
     })
+})
+
+
+export const acceptOrder = TryCatch(async (req: AuthenticatedRequest, res) => {
+     const riderUserId = req.user?._id;
+     const {orderId} = req.params;
+
+     if(!riderUserId){
+        return res.status(401).json({
+            message:"Unauthorized"
+        });
+     }
+
+     const rider = await Rider.findOne({userId: riderUserId, isAvailable: true});
+
+     if(!rider){
+        return res.status(404).json({
+            message:"Rider is not available to accept orders"
+        });
+     }
+
+     try{
+        const {data} = await axios.put(`${process.env.RESTAURANT_SERVICE}/api/order/assign/rider`,{
+            orderId,
+            riderId: rider._id.toString(),
+            riderUserId: rider.userId,
+            riderName: rider.picture,
+            riderPhone: rider.phoneNumber,
+
+        },
+    {
+        headers:{
+            "x-internal-key": process.env.INTERNAL_SERVICE_KEY
+        }
+    })
+
+    if(data.success){
+        const riderDetails = await Rider.findOneAndUpdate({
+            userId: riderUserId,
+            isAvailable: true,
+        },{
+            isAvailable: false,
+        },{
+            new:true
+        })
+
+        res.status(200).json({
+            message:"Order accepted successfully",
+            order:data.order,
+        })
+    }
+        }catch(Error){
+        console.error("Order Already taken: ", Error);
+        res.status(500).json({
+            message:"Order Already taken by another rider or an error occurred",
+        })
+     }
+})
+
+export const fetchMyCurrentOrder = TryCatch(async (req: AuthenticatedRequest, res) => {
+    const riderUserId = req.user?._id;
+     const {orderId} = req.params;
+
+     if(!riderUserId){
+        return res.status(401).json({
+            message:"Unauthorized"
+        });
+     }
+
+     const rider = await Rider.findOne({
+        userId: riderUserId, 
+        isVerified: true
+    });
+
+     if(!rider){
+        return res.status(404).json({
+            message:"Rider is not available to accept orders"
+        });
+     }
+
+     try{
+        
+        const { data } = await axios.get(`${process.env.RESTAURANT_SERVICE}/api/order/rider/current?riderId=${rider._id.toString()}`, {
+            headers: {
+                "x-internal-key": process.env.INTERNAL_SERVICE_KEY
+            },
+        });
+
+
+        res.status(200).json({
+            message:"Current order fetched successfully",
+            // order: data,
+            order: data.order || data,
+        })
+     }
+     catch(error: any){
+        console.error("Error fetching current order: ", error);
+        res.status(500).json({
+            message:error.response.data.message||"Error fetching current order"
+        })
+     }
+
+})
+
+export const updateOrderStatus = TryCatch(async (req: AuthenticatedRequest, res) => {
+    const userId = req.user?._id;
+
+    if(!userId){
+        return res.status(401).json({
+            message:"Unauthorized"
+        });
+    }
+
+    const rider = await Rider.findOne({userId: userId});
+
+    if(!rider){
+        return res.status(404).json({
+            message:"Rider profile not found"
+        });
+    }
+
+    const { orderId } = req.params;
+
+    try{
+        const {data} = await axios.put(`${process.env.RESTAURANT_SERVICE}/api/order/update/status/rider`,{
+            orderId,
+        },{
+            headers:{
+                "x-internal-key": process.env.INTERNAL_SERVICE_KEY
+            },
+        })
+
+        res.status(200).json({
+            message: data.message||"Order status updated successfully",
+            // order:data,
+        })
+
+    }catch(error){
+        console.error("Error updating order status: ", error);
+        res.status(500).json({
+            message:"Error updating order status"
+        })
+    }
+
 })
 
