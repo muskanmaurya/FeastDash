@@ -42,12 +42,42 @@ const Login = () => {
     
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white px-4">
-        <div className="w-full max-w-md rounded-lg bg-gray-100 p-8 shadow-md">
-            <h1 className='text-center text-3xl font-bold text-red-500'>Zomato Clone</h1>
-            <p className = "text-center text-sm text-gray-500"> Login or Sign up to continue</p>
-            <button onClick={googleLogin} disabled={loading} className='flex w-full items-center justify-center gap-4 rounded-xl border-gray-300 bg-white px-4 py-3'><FcGoogle size={20}/>{loading?"Signing in...":"Continue with Google"}</button>
-            <p className="text-center text-sm text-gray-500">By continuing, you agree to our <span className="font-semibold text-red-500">Terms of Service</span> and <span className="font-semibold text-red-500">Privacy Policy</span>.</p>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100/90 px-4 font-sans antialiased">
+        <div className="shadow-md w-full max-w-md transform rounded-2xl border-t-4 border-[#E23744] bg-white p-8 transition-all duration-300 md:p-10">
+            
+            {/* Header / Brand Typography Layer */}
+            <div className="space-y-2 text-center">
+                <h1 className="text-4xl font-black tracking-tight text-[#E23744]">
+                    FeastDash
+                </h1>
+                <p className="text-sm font-medium text-gray-400">
+                    Login or Sign up to continue
+                </p>
+            </div>
+
+            {/* Interactive OAuth CTA Section */}
+            <div className="my-8 cursor-pointer">
+                <button 
+                    onClick={googleLogin} 
+                    disabled={loading} 
+                    className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-sm font-semibold text-gray-700 shadow-sm outline-none transition-all duration-200 hover:bg-gray-50 hover:border-gray-300 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50"
+                >
+                    <FcGoogle size={22} className={loading ? "animate-bounce" : ""} />
+                    <span>{loading ? "Signing in..." : "Continue with Google"}</span>
+                </button>
+            </div>
+
+            {/* Legal / Compliance Footer Text */}
+            <p className="text-center text-xs font-medium leading-relaxed text-gray-400 px-2">
+                By continuing, you agree to our{" "}
+                <span className="cursor-pointer font-semibold text-gray-600 transition-colors hover:text-[#E23744]">
+                    Terms of Service
+                </span>{" "}
+                and{" "}
+                <span className="cursor-pointer font-semibold text-gray-600 transition-colors hover:text-[#E23744]">
+                    Privacy Policy
+                </span>.
+            </p>
         </div>
     </div>
   )

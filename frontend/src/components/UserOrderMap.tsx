@@ -1,11 +1,8 @@
-import type { IOrder } from "../types";
-import {useState, useEffect} from 'react'
+import { useEffect} from 'react'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import * as L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-routing-machine';
-import axios from "axios";
-import { realtimeService } from "../config";
 
 /* eslint-disable @typescript-eslint/no-namespace */
 declare module 'leaflet' {
