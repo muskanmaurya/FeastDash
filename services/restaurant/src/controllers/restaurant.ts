@@ -8,9 +8,6 @@ import jwt from "jsonwebtoken";
 export const addRestaurant = TryCatch(async (req: AuthenticatedRequest, res) => {
     const user = req.user;
 
-    //as we know it's a restaur.. servicee where we need a seller so we need to check if thsi api is called that person is a seller or not? so we will creaet a middlewware checkpoint for isseeller
-
-
     if (!user || user.role !== "seller") {  
         return res.status(403).json({
             message: "Unauthorized/Forbidden: Only sellers can add a restaurant",
@@ -90,7 +87,7 @@ export const fetchMyRestaurant = TryCatch(async (req: AuthenticatedRequest, res)
         return res.status(200).json({
             success: false,
             message: "No restaurant found for this user yet.",
-            restaurant: null // Explicitly send null with a successful request status
+            restaurant: null 
         });
     }
 
@@ -189,7 +186,7 @@ export const getNearbyRestaurant = TryCatch(async(req, res)=>{
     }
 
     const query: any = {
-        // isVerified : true
+        isVerified : true
     }
 
     if(search && typeof search === "string"){

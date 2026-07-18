@@ -1,6 +1,14 @@
 import {Request, Response, NextFunction} from "express";
 import jwt,{JwtPayload} from "jsonwebtoken";
-import {IUser} from "../models/User.js";
+
+export interface IUser {
+    _id:string;
+    name: String;
+    email: String;
+    image: String;
+    role: String;
+    restaurantId: string;
+}
 
 export interface AuthenticatedRequest extends Request{
     user?: IUser | null;
@@ -47,3 +55,28 @@ Promise<void> => {
         }
 }
 
+export const isAdmin = async(req:AuthenticatedRequest, res: Response, next:NextFunction)=>{
+    try{
+        if(!req.user){
+            res.status(401).json({
+                message:"Unauthorized: User not found",
+            })
+            return;
+        }
+
+        if(req.user.role !== "admin"){
+            res.status(403).json({
+                message:"Forbidden: access denied, admin only",
+            })
+            return;
+        }
+
+        next();
+    }catch(error: any){
+        console.error("isAdmin middleware error:", error);
+        const message = error?.message || "Unauthorized: isAdmin error";
+        res.status(401).json({
+            message,
+        })
+    }
+}

@@ -67,14 +67,14 @@ const RiderCurrentOrder = ({ order, onStatusUpdate }: Props) => {
                 )
             }
 
-            <div className="space-y-2">
+            <div className="space-y-2 cursor-pointer">
                 {order.status === "rider-assigned" && (
-                    <button onClick={()=>updateStatus()} className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:underline" >
+                    <button onClick={()=>updateStatus()} className="bg-amber-500 hover:bg-amber-600 text-white cursor-pointer px-4 py-2 rounded-lg text-sm font-semibold hover:underline" >
                         Reached Restaurant
                     </button>
                 )}
                 {order.status === "picked-up" && (
-                    <button onClick={()=>updateStatus()} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:underline" >
+                    <button onClick={()=>updateStatus()} className="bg-green-500 hover:bg-green-600 text-white cursor-pointer px-4 py-2 rounded-lg text-sm font-semibold hover:underline" >
                         Mark as Delivered
                     </button>
                 )}

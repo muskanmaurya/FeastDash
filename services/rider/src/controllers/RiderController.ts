@@ -94,6 +94,7 @@ export const fetchMyProfile = TryCatch(async (req: AuthenticatedRequest, res) =>
     })
 
 
+
     res.json(account);
 })
 
@@ -238,7 +239,6 @@ export const fetchMyCurrentOrder = TryCatch(async (req: AuthenticatedRequest, re
      }
 
      try{
-        
         const { data } = await axios.get(`${process.env.RESTAURANT_SERVICE}/api/order/rider/current?riderId=${rider._id.toString()}`, {
             headers: {
                 "x-internal-key": process.env.INTERNAL_SERVICE_KEY
@@ -260,6 +260,8 @@ export const fetchMyCurrentOrder = TryCatch(async (req: AuthenticatedRequest, re
      }
 
 })
+
+
 
 export const updateOrderStatus = TryCatch(async (req: AuthenticatedRequest, res) => {
     const userId = req.user?._id;

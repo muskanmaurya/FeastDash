@@ -131,7 +131,6 @@ const RiderDashboard = () => {
         fetchCurrentOrder();
     }, [])
 
-
     const toggleAvailability = async () => {
         if (!navigator.geolocation) {
             toast.error("Location is Required to toggle availability");
@@ -377,7 +376,8 @@ const RiderDashboard = () => {
             </button>
         </div>}
 
-        {profile.isAvailable && incomingOrders.length > 0 && (
+    
+{profile.isAvailable && incomingOrders.length > 0 && (
     <div className='mx-auto max-w-md px-4 space-y-3'>
         <h3 className="font-semibold text-gray-700">Incoming Orders</h3>
         {incomingOrders.map((id) => (
