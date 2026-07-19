@@ -89,7 +89,7 @@ const Home = () => {
             name={res.name} 
             image={res.image ?? ""} 
             isOpen={res.isOpen} 
-            distance={distance} />
+            distance={distance.toString()} />
           })
         }
 

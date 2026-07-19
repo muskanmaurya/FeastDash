@@ -156,7 +156,7 @@ const Checkout = () => {
 
       const {orderId} = order;
       try{
-        const stripe = await stripePromise;
+        await stripePromise;
 
         const {data} = await axios.post(`${utilsService}/api/payment/stripe/create`,{
           orderId

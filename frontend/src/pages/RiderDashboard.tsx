@@ -54,7 +54,8 @@ const RiderDashboard = () => {
             setAudioUnlocked(true);
             toast.success("Sound Enabled")
         } catch (error) {
-            toast.error("Tap again to enable sound")
+            toast.error("Tap again to enable sound");
+            console.error("Error unlocking audio:", error);
         }
     }
 
@@ -169,8 +170,7 @@ const RiderDashboard = () => {
     const [image, setImage] = useState<File | null>(null);
     const [submitting, setSubmitting] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
+    const handleSubmit = async () => {
 
         //  Verify Geolocation capabilities exist
         if (!navigator.geolocation) {
