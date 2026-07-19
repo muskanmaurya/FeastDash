@@ -462,15 +462,12 @@ export const getCurrentOrderForRider = TryCatch(async(req, res)=>{
 })
 
 
-
 export const updateOrderStatusByRider = TryCatch(async(req, res)=>{
     if (req.headers["x-internal-key"] !== process.env.INTERNAL_SERVICE_KEY) {
         return res.status(401).json({
             message: "Forbidden"
         })
     }
-
-    // const orderId = req.body;
 
     const { orderId } = req.body;
 

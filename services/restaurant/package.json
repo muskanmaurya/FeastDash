@@ -17,6 +17,7 @@
     "amqplib": "^2.0.1",
     "axios": "^1.18.1",
     "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
     "datauri": "^4.1.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
@@ -35,7 +36,6 @@
     "@types/morgan": "^1.9.10",
     "@types/multer": "^2.1.0",
     "concurrently": "^10.0.3",
-    "cors": "^2.8.6",
     "typescript": "^6.0.3"
   }
 }

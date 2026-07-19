@@ -116,10 +116,10 @@ const RiderDashboard = () => {
                 },
             );
             if (data && data.order && data.order.status !== 'delivered') {
-            setCurrentOrder(data.order);
-        } else {
-            setCurrentOrder(null);
-        }
+                setCurrentOrder(data.order);
+            } else {
+                setCurrentOrder(null);
+            }
 
         } catch (error) {
             console.log("Error fetching current order: ", error);
@@ -347,10 +347,10 @@ const RiderDashboard = () => {
                         onClick={toggleAvailability}
                         disabled={toggling}
                         className={`w-full py-2 rounded-lg text-white font-semibold ${toggling
-                                ? "bg-gray-400"
-                                : profile.isAvailable
-                                    ? "bg-gray-600"
-                                    : "bg-[#E23744]"
+                            ? "bg-gray-400"
+                            : profile.isAvailable
+                                ? "bg-gray-600"
+                                : "bg-[#E23744]"
                             }`} >
                         {toggling
                             ? "Updating..."
@@ -376,32 +376,32 @@ const RiderDashboard = () => {
             </button>
         </div>}
 
-    
-{profile.isAvailable && incomingOrders.length > 0 && (
-    <div className='mx-auto max-w-md px-4 space-y-3'>
-        <h3 className="font-semibold text-gray-700">Incoming Orders</h3>
-        {incomingOrders.map((id) => (
-            <RiderOrderRequest 
-                key={id} 
-                orderId={id} 
-                onAccepted={async () => {
-                    await fetchCurrentOrder();
-                    await fetchProfile();
-                }} 
-            />
-        ))}
-    </div>
-)}
 
-{
-    currentOrder && (
-        <div className="mx-auto max-w-md px-4 space-y-4" > 
-            <RiderCurrentOrder order={currentOrder} onStatusUpdate={fetchCurrentOrder} />
-            <RiderOrderMap order={currentOrder} />
-        
-        </div>
-    ) 
-}
+        {profile.isAvailable && incomingOrders.length > 0 && (
+            <div className='mx-auto max-w-md px-4 space-y-3'>
+                <h3 className="font-semibold text-gray-700">Incoming Orders</h3>
+                {incomingOrders.map((id) => (
+                    <RiderOrderRequest
+                        key={id}
+                        orderId={id}
+                        onAccepted={async () => {
+                            await fetchCurrentOrder();
+                            await fetchProfile();
+                        }}
+                    />
+                ))}
+            </div>
+        )}
+
+        {
+            currentOrder && (
+                <div className="mx-auto max-w-md px-4 space-y-4" >
+                    <RiderCurrentOrder order={currentOrder} onStatusUpdate={fetchCurrentOrder} />
+                    <RiderOrderMap order={currentOrder} />
+
+                </div>
+            )
+        }
     </div>
 }
 
