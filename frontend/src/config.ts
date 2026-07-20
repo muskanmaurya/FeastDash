@@ -1,12 +1,14 @@
 // central config for constants used across the app
-export const authService = "http://localhost:5000";
+export const authService = "https://auth-klva.onrender.com";
 
-export const restaurantService = "http://localhost:5001";
+export const restaurantService = "https://restaurant-service-0vhr.onrender.com";
 
-export const utilsService = "http://localhost:5002";
+export const utilsService = "https://utils-service-8wsn.onrender.com";
 
-export const realtimeService = "http://localhost:5004";
+export const realtimeService = "https://realtime-service-8234.onrender.com";
 
-export const riderService = "http://localhost:5005";
+export const riderService = "https://rider-service-r6cw.onrender.com";
 
-export const adminService = "http://localhost:5006";
+export const adminService = "https://admin-service-pw1e.onrender.com";
+
+
