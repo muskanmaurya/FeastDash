@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import type { IRestaurant } from "../types";
 import { restaurantService } from "../config";
 import axios from "axios";
-import { toast } from "react-hot-toast/headless";
+import toast from "react-hot-toast";
 import RestaurantCard from "../components/RestaurantCard";
 
 const Home = () => {

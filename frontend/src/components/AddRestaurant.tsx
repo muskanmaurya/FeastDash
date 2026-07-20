@@ -36,7 +36,7 @@ const AddRestaurant = ({ fetchMyRestaurant }: props) => {
     formData.append("file", image);
     formData.append("phone", phone);
 
-
+    
     try {
       setSubmitting(true);
       await axios.post(`${restaurantService}/api/restaurant/new`, formData, {
@@ -45,16 +45,17 @@ const AddRestaurant = ({ fetchMyRestaurant }: props) => {
           "Content-Type": "multipart/form-data"
         }
       });
-
+      
+      
       toast.success("Restaurant created successfully");
       fetchMyRestaurant(); // Refresh the restaurant data after successful creation
-      // 🟢 If your backend sends a clean success message
-        alert("Restaurant created successfully!");
-        
-        // Optional: reload the page or trigger fetchMyRestaurant again to show the newly created restaurant page
-        window.location.reload();
-
+      alert("Restaurant created successfully!");
+      
+      // Optional: reload the page or trigger fetchMyRestaurant again to show the newly created restaurant page
+      window.location.reload();
+      
     } catch (error) {
+      console.log("formdata: ",formData);
       console.log("Error in creating restaurant: ", error);
       toast.error("Error in creating restaurant");
     } finally {

@@ -25,33 +25,6 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     const [quantity, setQuantity] = useState(0); 
 
 
-
-    // const [hasRestaurant, setHasRestaurant] = useState<boolean>(false);
-
-    // async function fetchUser() {
-    //     try {
-
-    //         const token = localStorage.getItem("token");
-
-    //         const { data } = await axios.get(`${authService}/api/auth/me`, {
-    //             headers: {
-    //                 Authorization: `Bearer ${token}`,
-    //             }
-    //         })
-    //         setUser(data.user);  //this was the reason why my page when reloading everytime return to home page even when I was a seller because Ijust gave setUser(data) and when I gave here setUser(data.user) it worked because data.user is the user object and data is the whole response object which contains other things like message, status etc. so when I gave setUser(data) it was not setting the user object correctly and hence it was returning to home page because user was null.
-    //         // setHasRestaurant(data.hasRestaurant);
-    //         setIsAuth(true);
-
-    //     } catch (error) {
-    //         console.log(error);
-    //         // setUser(null);
-    //         // setIsAuth(false);
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // }
-
-
     async function fetchUser() {
         try {
             const token = localStorage.getItem("token");
@@ -71,7 +44,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
 
         } catch (error) {
             console.log("Invalid token detected, clearing session...", error);
-            // 🟢 Senior Dev Safety Guard: Clear invalid tokens automatically on 401
+            // Clear invalid tokens automatically on 401
             localStorage.removeItem("token");
             setUser(null);
             setIsAuth(false);

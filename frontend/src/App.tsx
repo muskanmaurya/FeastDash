@@ -18,6 +18,7 @@ import Orders from './pages/Orders';
 import OrderPage from './pages/OrderPage';
 import RiderDashboard from './pages/RiderDashboard';
 import Admin from './pages/Admin';
+import PaymentSuccess from './pages/PaymentSuccess';
 
 function App() {
 
@@ -53,6 +54,7 @@ function App() {
         <Route path = '/orders' element = {<Orders/>}/> 
         <Route path = '/orders/:id' element = {<OrderPage/>}/> 
         <Route path = '/ordersuccess' element = {<OrderSuccess/>}/> 
+        <Route path = '/paymentsuccess/:id' element = {<PaymentSuccess/>}/> 
         <Route path = '/addresses' element = {<AddAddressPage/>}/> 
         <Route path = '/checkout' element = {<Checkout/>}/> 
         <Route path = '/restaurant/:id' element = {<RestaurantPage/>}/> 
