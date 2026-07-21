@@ -21,7 +21,7 @@ const AddRestaurant = ({ fetchMyRestaurant }: props) => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!name || !image) {
+    if (!name || !image || !location) {
       alert("All fields are required");
       return;
     }
@@ -30,13 +30,13 @@ const AddRestaurant = ({ fetchMyRestaurant }: props) => {
 
     formData.append("name", name);
     formData.append("description", description);
-    // formData.append("latitude", String(location.latitude));
-    // formData.append("longitude", String(location.longitude));
-    // formData.append("formattedAddress", location.formattedAddress);
+    formData.append("latitude", String(location.latitude));
+    formData.append("longitude", String(location.longitude));
+    formData.append("formattedAddress", location.formattedAddress);
     formData.append("file", image);
     formData.append("phone", phone);
 
-    console.log("formdata: ",formData);
+    console.log("formdata: ", formData);
 
     
     try {
