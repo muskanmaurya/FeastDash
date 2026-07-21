@@ -54,9 +54,10 @@ const AddRestaurant = ({ fetchMyRestaurant }: props) => {
       // Optional: reload the page or trigger fetchMyRestaurant again to show the newly created restaurant page
       window.location.reload();
       
-    } catch (error) {
+    } catch (error : any) {
       console.log("formdata: ",formData);
       console.log("Error in creating restaurant: ", error);
+      console.log(error.response.data.message);
       toast.error("Error in creating restaurant");
     } finally {
       setSubmitting(false);
