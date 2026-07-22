@@ -26,6 +26,8 @@ const AddRestaurant = ({ fetchMyRestaurant }: props) => {
       return;
     }
 
+    console.log("location: ", location);
+
     const formData = new FormData();
 
     formData.append("name", name);
