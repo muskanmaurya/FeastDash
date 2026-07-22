@@ -109,7 +109,7 @@ const AddMenuItem = ({onItemAdded}:{onItemAdded:()=>void}) => {
         />
         <FiUploadCloud className="h-5 w-5 text-[#E23744]" />
         <span className="truncate text-gray-500 font-normal">
-          {image ? `Selected: ${image.name}` : "Upload restaurant image"}
+          {image ? `Selected: ${image.name}` : "Upload Menu Item image"}
         </span>
       </label>
     </div>
