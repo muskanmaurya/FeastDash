@@ -67,9 +67,11 @@ const OrderPage = () => {
         if (!socket || !id) return;
         
         socket.emit("join", `user:${id}`);
+        socket.emit("join", `order:${id}`);
         
         return () =>{
             socket.emit("leave", `user:${id}`)
+            socket.emit("leave", `order:${id}`)
         }
     },[socket, id])
 

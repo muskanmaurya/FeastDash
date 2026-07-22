@@ -1,4 +1,4 @@
-import { useEffect} from 'react'
+import { useEffect, useRef} from 'react'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import * as L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -35,24 +35,42 @@ const Routing = ({
 })=>{
     const map = useMap();
 
-    useEffect(()=>{
+    const routingControlRef = useRef<any>(null);
+
+    useEffect(() => {
+        if (!map) return;
+
         const control = L.Routing.control({
-            waypoints:[L.latLng(from), L.latLng(to)],
-            lineOptions:{
-                styles:[{color: "#E23744", weight: 5}],
-            },
+            waypoints: [L.latLng(from), L.latLng(to)],
+            lineOptions: { styles: [{ color: "#E23744", weight: 5 }] },
             addWayPoints: false,
             draggableWayPoints: false,
             show: false,
-            createMarker: ()=>null,
-            router:L.Routing.osrmv1({
-                serviceUrl: "https://router.project-osrm.org/route/v1"
-            })
+            createMarker: () => null,
+            router: L.Routing.osrmv1({
+                serviceUrl: "https://router.project-osrm.org/route/v1",
+            }),
         }).addTo(map);
-        return ()=>{
-            map.removeControl(control);
+
+        routingControlRef.current = control;
+
+        return () => {
+            if (map && routingControlRef.current) {
+                try {
+                    map.removeControl(routingControlRef.current);
+                } catch (e) {
+                    console.warn("Leaflet cleanup warning caught safely", e);
+                }
+            }
         };
-    },[from, to, map])
+    }, [map]); 
+
+    // Dynamically update waypoints when coordinates change without re-creating the control
+    useEffect(() => {
+        if (routingControlRef.current) {
+            routingControlRef.current.setWaypoints([L.latLng(from), L.latLng(to)]);
+        }
+    }, [from, to]);
 
     return null;
 };

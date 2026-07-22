@@ -82,7 +82,7 @@ const RiderOrderMap = ({ order }: Props) => {
                 
                 axios.post(`${realtimeService}/api/v1/internal/emit`,{
                     event:"rider:location",
-                    room: `user:${order.userId}`,
+                    room: `user:${order._id}`,
                     payload:{latitude, longitude},
                 },{
                     headers:{
