@@ -33,8 +33,6 @@ interface Props{
     order: IOrder;
 }
 
-// Replace the Routing component inside RiderOrderMap.tsx and UserOrderMap.tsx with this:
-
 const Routing = ({
   from,
   to,
@@ -45,40 +43,51 @@ const Routing = ({
   const map = useMap();
   const routingControlRef = useRef<any>(null);
 
-  // 1. Initialize Leaflet routing control ONCE
   useEffect(() => {
-    if (!map) return;
+  if (!map) return;
 
-    try {
-      const control = L.Routing.control({
-        waypoints: [L.latLng(from), L.latLng(to)],
-        lineOptions: {
-          styles: [{ color: "#E23744", weight: 5 }],
-        },
-        addWayPoints: false,
-        draggableWayPoints: false,
-        show: false,
-        createMarker: () => null,
-        router: L.Routing.osrmv1({
-          serviceUrl: "https://router.project-osrm.org/route/v1",
-        }),
-      }).addTo(map);
+  // Check if L.Routing exists on window/Leaflet
+  if (!L || !(L as any).Routing) {
+    console.warn("Leaflet Routing Machine is not ready yet.");
+    return;
+  }
 
-      routingControlRef.current = control;
-    } catch (err) {
-      console.warn("Leaflet Routing initialization caught safely:", err);
-    }
+  try {
+    const control = (L as any).Routing.control({
+      waypoints: [L.latLng(from), L.latLng(to)],
+      // Route line styling options
+      lineOptions: {
+        styles: [
+          { color: "#E23744", weight: 6, opacity: 0.9 }
+        ],
+        extendToWaypoints: true,
+        missingRouteTolerance: 0,
+      },
+      addWaypoints: false,
+      draggableWaypoints: false,
+      fitSelectedRoutes: true,
+      show: false,
+      createMarker: () => null, // Hide default blue markers
+      router: (L as any).Routing.osrmv1({
+        serviceUrl: "https://router.project-osrm.org/route/v1",
+      }),
+    }).addTo(map);
 
-    return () => {
-      if (map && routingControlRef.current) {
-        try {
-          map.removeControl(routingControlRef.current);
-        } catch (e) {
-          console.warn("Leaflet cleanup error handled safely:", e);
-        }
+    routingControlRef.current = control;
+  } catch (err) {
+    console.error("Leaflet Routing Error:", err);
+  }
+
+  return () => {
+    if (map && routingControlRef.current) {
+      try {
+        map.removeControl(routingControlRef.current);
+      } catch (e) {
+        // Safe cleanup
       }
-    };
-  }, [map]); // Dependency array MUST ONLY contain `map`!
+    }
+  };
+}, [map]);
 
   // 2. Update waypoints dynamically when 'from' (rider location) changes
   useEffect(() => {
