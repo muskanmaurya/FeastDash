@@ -6,6 +6,8 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet-routing-machine';
 import axios from "axios";
 import { realtimeService } from "../config";
+import 'leaflet/dist/leaflet.css';
+import 'leaflet-routing-machine/dist/leaflet-routing-machine.css'; // <--- CRITICAL FOR ROUTE STYLING
 
 /* eslint-disable @typescript-eslint/no-namespace */
 declare module 'leaflet' {
@@ -83,7 +85,7 @@ const Routing = ({
       try {
         map.removeControl(routingControlRef.current);
       } catch (e) {
-        // Safe cleanup
+        console.log()
       }
     }
   };
