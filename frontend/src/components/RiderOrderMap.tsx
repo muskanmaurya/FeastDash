@@ -1,5 +1,5 @@
 import type { IOrder } from "../types";
-import {useState, useEffect} from 'react'
+import {useState, useEffect, useRef} from 'react'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import * as L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -33,35 +33,68 @@ interface Props{
     order: IOrder;
 }
 
+// Replace the Routing component inside RiderOrderMap.tsx and UserOrderMap.tsx with this:
+
 const Routing = ({
-    from,
-    to
-}:{
-    from: [number, number], //latitude and longitude of the restaurant
-    to: [number, number] //latitude and longitude of the delivery address
-})=>{
-    const map = useMap();
+  from,
+  to,
+}: {
+  from: [number, number];
+  to: [number, number];
+}) => {
+  const map = useMap();
+  const routingControlRef = useRef<any>(null);
 
-    useEffect(()=>{
-        const control = L.Routing.control({
-            waypoints:[L.latLng(from), L.latLng(to)],
-            lineOptions:{
-                styles:[{color: "#E23744", weight: 5}],
-            },
-            addWayPoints: false,
-            draggableWayPoints: false,
-            show: false,
-            createMarker: ()=>null,
-            router:L.Routing.osrmv1({
-                serviceUrl: "https://router.project-osrm.org/route/v1"
-            })
-        }).addTo(map);
-        return ()=>{
-            map.removeControl(control);
-        };
-    },[from, to, map])
+  // 1. Initialize Leaflet routing control ONCE
+  useEffect(() => {
+    if (!map) return;
 
-    return null;
+    try {
+      const control = L.Routing.control({
+        waypoints: [L.latLng(from), L.latLng(to)],
+        lineOptions: {
+          styles: [{ color: "#E23744", weight: 5 }],
+        },
+        addWayPoints: false,
+        draggableWayPoints: false,
+        show: false,
+        createMarker: () => null,
+        router: L.Routing.osrmv1({
+          serviceUrl: "https://router.project-osrm.org/route/v1",
+        }),
+      }).addTo(map);
+
+      routingControlRef.current = control;
+    } catch (err) {
+      console.warn("Leaflet Routing initialization caught safely:", err);
+    }
+
+    return () => {
+      if (map && routingControlRef.current) {
+        try {
+          map.removeControl(routingControlRef.current);
+        } catch (e) {
+          console.warn("Leaflet cleanup error handled safely:", e);
+        }
+      }
+    };
+  }, [map]); // Dependency array MUST ONLY contain `map`!
+
+  // 2. Update waypoints dynamically when 'from' (rider location) changes
+  useEffect(() => {
+    if (routingControlRef.current) {
+      try {
+        routingControlRef.current.setWaypoints([
+          L.latLng(from),
+          L.latLng(to),
+        ]);
+      } catch (err) {
+        console.warn("Error updating waypoints safely handled:", err);
+      }
+    }
+  }, [from, to]);
+
+  return null;
 };
 
 const RiderOrderMap = ({ order }: Props) => {
@@ -100,7 +133,7 @@ const RiderOrderMap = ({ order }: Props) => {
         const interval = setInterval(fetchLocation, 10000);
 
         return () => clearInterval(interval);
-    },[order.userId])
+    },[order._id])
 
     if(!riderLocation) return null;
 
