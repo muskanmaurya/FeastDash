@@ -89,7 +89,7 @@ const Routing = ({
       }
     }
   };
-}, [map]);
+}, [map, from, to]);
 
   // 2. Update waypoints dynamically when 'from' (rider location) changes
   useEffect(() => {
@@ -103,7 +103,7 @@ const Routing = ({
         console.warn("Error updating waypoints safely handled:", err);
       }
     }
-  }, [from, to]);
+  }, [from, to, map]);
 
   return null;
 };
