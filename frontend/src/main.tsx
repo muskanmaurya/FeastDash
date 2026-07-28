@@ -6,6 +6,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AppProvider } from './context/AppContext.tsx';
 import { Toaster } from 'react-hot-toast';
 import 'leaflet/dist/leaflet.css';
+import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import { SocketProvider } from './context/SocketContext.tsx';
 
 createRoot(document.getElementById('root')!).render(
@@ -14,7 +15,6 @@ createRoot(document.getElementById('root')!).render(
       <Toaster/>
       <AppProvider>
         <SocketProvider>
-
           <App />
         </SocketProvider>
       </AppProvider>  

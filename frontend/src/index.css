@@ -1,1 +1,10 @@
 @import "tailwindcss";
+
+.leaflet-routing-container {
+  display: none !important; /* Hides routing panel text */
+}
+path.leaflet-interactive {
+  stroke: #E23744 !important;
+  stroke-width: 6 !important;
+  stroke-opacity: 0.9 !important;
+}

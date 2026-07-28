@@ -19,6 +19,8 @@ import OrderPage from './pages/OrderPage';
 import RiderDashboard from './pages/RiderDashboard';
 import Admin from './pages/Admin';
 import PaymentSuccess from './pages/PaymentSuccess';
+import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
+
 
 function App() {
 
