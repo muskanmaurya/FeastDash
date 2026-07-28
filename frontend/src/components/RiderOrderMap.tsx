@@ -1,6 +1,6 @@
 import type { IOrder } from "../types";
 import { useState, useEffect, useRef } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine";
@@ -55,60 +55,52 @@ const Routing = ({
   const map = useMap();
   const routingControlRef = useRef<any>(null);
 
+  // Initialize Routing Control ONCE when map mounts
   useEffect(() => {
-  if (!map) return;
+    if (!map) return;
 
-  if (!L || !(L as any).Routing) {
-    console.warn("Leaflet Routing Machine is not ready yet.");
-    return;
-  }
-
-  try {
-    const control = (L as any).Routing.control({
-      waypoints: [
-        L.latLng(Number(from[0]), Number(from[1])),
-        L.latLng(Number(to[0]), Number(to[1])),
-      ],
-      lineOptions: {
-        styles: [{ color: "#E23744", weight: 6, opacity: 0.9 }],
-        extendToWaypoints: true,
-        missingRouteTolerance: 0,
-      },
-      addWaypoints: false,
-      draggableWaypoints: false,
-      fitSelectedRoutes: false,
-      show: false,
-      createMarker: () => null,
-      router: (L as any).Routing.osrmv1({
-        serviceUrl: "https://router.project-osrm.org/route/v1",
-      }),
-    });
-
-    // Debugging Listeners
-    control.on('routesfound', (e: any) => {
-      console.log("✅ OSRM Route Found successfully!", e.routes);
-    });
-
-    control.on('routingerror', (e: any) => {
-      console.error("❌ OSRM Routing Error:", e);
-    });
-
-    control.addTo(map);
-    routingControlRef.current = control;
-  } catch (err) {
-    console.error("Leaflet Routing Exception:", err);
-  }
-
-  return () => {
-    if (map && routingControlRef.current) {
-      try {
-        map.removeControl(routingControlRef.current);
-      } catch (e) {
-        // Safe cleanup
-      }
+    if (!L || !(L as any).Routing) {
+      console.warn("Leaflet Routing Machine is not ready yet.");
+      return;
     }
-  };
-}, [map]);
+
+    try {
+     const control = (L as any).Routing.control({
+  waypoints: [
+    L.latLng(from[0], from[1]),
+    L.latLng(to[0], to[1])
+  ],
+  lineOptions: {
+    styles: [{ color: "#E23744", weight: 6, opacity: 0.9 }],
+    extendToWaypoints: true,
+    missingRouteTolerance: 0,
+  },
+  addWaypoints: false,
+  draggableWaypoints: false,
+  fitSelectedRoutes: false,
+  show: false,
+  createMarker: () => null,
+  router: (L as any).Routing.osrmv1({
+    serviceUrl: "https://router.project-osrm.org/route/v1",
+    profile: "driving", // Force driving/road routing profile!
+  }),
+}).addTo(map);
+
+      routingControlRef.current = control;
+    } catch (err) {
+      console.error("Leaflet Routing Error:", err);
+    }
+
+    return () => {
+      if (map && routingControlRef.current) {
+        try {
+          map.removeControl(routingControlRef.current);
+        } catch (e) {
+          console.warn("Leaflet cleanup warning caught safely", e);
+        }
+      }
+    };
+  }, [map]); // MUST ONLY contain [map]
 
   // Dynamically update waypoints without destroying the line layer
   useEffect(() => {
@@ -180,7 +172,6 @@ const RiderOrderMap = ({ order }: Props) => {
 
   return (
     <div className="rounded-xl bg-white shadow-sm p-3">
-
       <MapContainer
         center={riderLocation}
         zoom={14}
@@ -191,22 +182,12 @@ const RiderOrderMap = ({ order }: Props) => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <MapRecenter center={riderLocation} />
-
         <Marker position={riderLocation} icon={riderIcon}>
           <Popup>You (Rider)</Popup>
         </Marker>
-
         <Marker position={deliveryLocation} icon={deliveryIcon}>
           <Popup>Delivery Location</Popup>
         </Marker>
-
-        {/* FALLBACK DIRECT RED LINE: Guarantees a red line appears instantly! */}
-        <Polyline
-          positions={[riderLocation, deliveryLocation]}
-          pathOptions={{ color: '#E23744', weight: 5, opacity: 0.8, dashArray: '8, 8' }}
-        />
-
-        {/* OSRM Road Routing */}
         <Routing from={riderLocation} to={deliveryLocation} />
       </MapContainer>
     </div>
