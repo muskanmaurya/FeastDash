@@ -1,5 +1,5 @@
 import type { IOrder } from "../types";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -33,8 +33,18 @@ interface Props {
   order: IOrder;
 }
 
+// 1. Map Recenter Component to follow rider smoothly
+const MapRecenter = ({ center }: { center: [number, number] }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (map && center) {
+      map.panTo(center);
+    }
+  }, [center, map]);
+  return null;
+};
 
-// 2. Fixed Routing component
+// 2. Fixed Routing Component using useRef (Instantiates ONCE)
 const Routing = ({
   from,
   to,
@@ -43,8 +53,9 @@ const Routing = ({
   to: [number, number];
 }) => {
   const map = useMap();
+  const routingControlRef = useRef<any>(null);
 
-  // Initialize control ONCE when map mounts
+  // Initialize Routing Control ONCE when map mounts
   useEffect(() => {
     if (!map) return;
 
@@ -54,35 +65,52 @@ const Routing = ({
     }
 
     try {
-      const control = L.Routing.control({
+      const control = (L as any).Routing.control({
         waypoints: [L.latLng(from), L.latLng(to)],
         lineOptions: {
           styles: [{ color: "#E23744", weight: 6, opacity: 0.9 }],
           extendToWaypoints: true,
+          missingRouteTolerance: 0,
         },
-        addWaypoints: false,
+        addWaypoints: false, // Fixed capitalization
         draggableWaypoints: false,
+        fitSelectedRoutes: false,
         show: false,
         createMarker: () => null,
-        router: L.Routing.osrmv1({
+        router: (L as any).Routing.osrmv1({
           serviceUrl: "https://router.project-osrm.org/route/v1",
         }),
       }).addTo(map);
 
-      return () => {
-        if (map) {
-          try {
-            map.removeControl(control);
-          } catch (e) {
-            console.log(e);
-          }
-        }
-      };
+      routingControlRef.current = control;
     } catch (err) {
       console.error("Leaflet Routing Error:", err);
     }
 
-  }, [from, to, map]); 
+    return () => {
+      if (map && routingControlRef.current) {
+        try {
+          map.removeControl(routingControlRef.current);
+        } catch (e) {
+          // Safe cleanup
+        }
+      }
+    };
+  }, [map]); // MUST ONLY contain [map]
+
+  // Dynamically update waypoints without destroying the line layer
+  useEffect(() => {
+    if (routingControlRef.current) {
+      try {
+        routingControlRef.current.setWaypoints([
+          L.latLng(from),
+          L.latLng(to),
+        ]);
+      } catch (err) {
+        console.warn("Error updating waypoints:", err);
+      }
+    }
+  }, [from, to]);
 
   return null;
 };
@@ -100,18 +128,19 @@ const RiderOrderMap = ({ order }: Props) => {
   ];
 
   useEffect(() => {
-    const fetchLocation = async () => {
+    const fetchLocation = () => {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const latitude = pos.coords.latitude;
           const longitude = pos.coords.longitude;
           setRiderLocation([latitude, longitude]);
+          console.log("📍 GPS Ping Triggered at:", new Date().toLocaleTimeString(), pos.coords);
 
           axios.post(
             `${realtimeService}/api/v1/internal/emit`,
             {
               event: "rider:location",
-              room: `order:${order.userId}`,
+              room: `order:${order._id}`, // Fixed room target to match Order ID
               payload: { latitude, longitude },
             },
             {
@@ -124,17 +153,16 @@ const RiderOrderMap = ({ order }: Props) => {
         (err) => console.log("Location error:", err),
         {
           enableHighAccuracy: true,
-          maximumAge: 5000,
-          timeout: 10000,
+          maximumAge: 0, // Force fresh GPS coordinates on every check
+          timeout: 5000,
         }
       );
     };
-
     fetchLocation();
-    const interval = setInterval(fetchLocation, 10000);
+    const interval = setInterval(fetchLocation, 5000); // Fixed interval to 5 seconds (5000ms)
 
     return () => clearInterval(interval);
-  }, [order.userId]);
+  }, [order._id]);
 
   if (!riderLocation) return null;
 
@@ -149,6 +177,7 @@ const RiderOrderMap = ({ order }: Props) => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <MapRecenter center={riderLocation} />
         <Marker position={riderLocation} icon={riderIcon}>
           <Popup>You (Rider)</Popup>
         </Marker>
