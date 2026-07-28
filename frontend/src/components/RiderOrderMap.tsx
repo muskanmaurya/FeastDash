@@ -68,7 +68,7 @@ const Routing = ({
       const control = (L as any).Routing.control({
         waypoints: [L.latLng(from), L.latLng(to)],
         lineOptions: {
-          styles: [{ color: "#E23744", weight: 6, opacity: 0.9 }],
+          styles: [{ color: "#E23744", weight: 6, opacity: 1 }],
           extendToWaypoints: true,
           missingRouteTolerance: 0,
         },
