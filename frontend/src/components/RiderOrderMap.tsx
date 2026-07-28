@@ -1,5 +1,5 @@
 import type { IOrder } from "../types";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -33,16 +33,6 @@ interface Props {
   order: IOrder;
 }
 
-// 1. Helper component to auto-pan map when rider moves
-const MapRecenter = ({ center }: { center: [number, number] }) => {
-  const map = useMap();
-  useEffect(() => {
-    if (map && center) {
-      map.panTo(center);
-    }
-  }, [center, map]);
-  return null;
-};
 
 // 2. Fixed Routing component
 const Routing = ({
@@ -53,7 +43,6 @@ const Routing = ({
   to: [number, number];
 }) => {
   const map = useMap();
-  const routingControlRef = useRef<any>(null);
 
   // Initialize control ONCE when map mounts
   useEffect(() => {
@@ -65,52 +54,35 @@ const Routing = ({
     }
 
     try {
-      const control = (L as any).Routing.control({
+      const control = L.Routing.control({
         waypoints: [L.latLng(from), L.latLng(to)],
         lineOptions: {
-          styles: [{ color: "#E23744", weight: 6, opacity: 1 }],
+          styles: [{ color: "#E23744", weight: 6, opacity: 0.9 }],
           extendToWaypoints: true,
-          missingRouteTolerance: 0,
         },
         addWaypoints: false,
         draggableWaypoints: false,
-        fitSelectedRoutes: false, // Prevents map zoom jumping on every tick
         show: false,
         createMarker: () => null,
-        router: (L as any).Routing.osrmv1({
+        router: L.Routing.osrmv1({
           serviceUrl: "https://router.project-osrm.org/route/v1",
         }),
       }).addTo(map);
 
-      routingControlRef.current = control;
+      return () => {
+        if (map) {
+          try {
+            map.removeControl(control);
+          } catch (e) {
+            console.log(e);
+          }
+        }
+      };
     } catch (err) {
       console.error("Leaflet Routing Error:", err);
     }
 
-    return () => {
-      if (map && routingControlRef.current) {
-        try {
-          map.removeControl(routingControlRef.current);
-        } catch (e) {
-          // Safe cleanup
-        }
-      }
-    };
-  }, [map]); // CRITICAL: ONLY [map] in dependencies!
-
-  // Dynamically update waypoints as rider moves
-  useEffect(() => {
-    if (routingControlRef.current) {
-      try {
-        routingControlRef.current.setWaypoints([
-          L.latLng(from),
-          L.latLng(to),
-        ]);
-      } catch (err) {
-        console.warn("Error updating waypoints safely handled:", err);
-      }
-    }
-  }, [from, to]);
+  }, [from, to, map]); 
 
   return null;
 };
@@ -139,7 +111,7 @@ const RiderOrderMap = ({ order }: Props) => {
             `${realtimeService}/api/v1/internal/emit`,
             {
               event: "rider:location",
-              room: `order:${order._id}`,
+              room: `order:${order.userId}`,
               payload: { latitude, longitude },
             },
             {
@@ -162,7 +134,7 @@ const RiderOrderMap = ({ order }: Props) => {
     const interval = setInterval(fetchLocation, 10000);
 
     return () => clearInterval(interval);
-  }, [order._id]);
+  }, [order.userId]);
 
   if (!riderLocation) return null;
 
@@ -177,7 +149,6 @@ const RiderOrderMap = ({ order }: Props) => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <MapRecenter center={riderLocation} />
         <Marker position={riderLocation} icon={riderIcon}>
           <Popup>You (Rider)</Popup>
         </Marker>
