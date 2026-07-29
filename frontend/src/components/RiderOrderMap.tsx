@@ -1,6 +1,6 @@
 import type { IOrder } from "../types";
 import { useState, useEffect, useRef } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from "react-leaflet";
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine";
@@ -65,26 +65,26 @@ const Routing = ({
     }
 
     try {
-     const control = (L as any).Routing.control({
-  waypoints: [
-    L.latLng(from[0], from[1]),
-    L.latLng(to[0], to[1])
-  ],
-  lineOptions: {
-    styles: [{ color: "#E23744", weight: 6, opacity: 0.9 }],
-    extendToWaypoints: true,
-    missingRouteTolerance: 0,
-  },
-  addWaypoints: false,
-  draggableWaypoints: false,
-  fitSelectedRoutes: false,
-  show: false,
-  createMarker: () => null,
-  router: (L as any).Routing.osrmv1({
-    serviceUrl: "https://router.project-osrm.org/route/v1",
-    profile: "driving", // Force driving/road routing profile!
-  }),
-}).addTo(map);
+      const control = (L as any).Routing.control({
+        waypoints: [
+          L.latLng(from[0], from[1]),
+          L.latLng(to[0], to[1])
+        ],
+        lineOptions: {
+          styles: [{ color: "#E23744", weight: 6, opacity: 0.9 }],
+          extendToWaypoints: true,
+          missingRouteTolerance: 0,
+        },
+        addWaypoints: false,
+        draggableWaypoints: false,
+        fitSelectedRoutes: false,
+        show: false,
+        createMarker: () => null,
+        router: (L as any).Routing.osrmv1({
+          serviceUrl: "https://router.project-osrm.org/route/v1",
+          profile: "driving", // Force driving/road routing profile!
+        }),
+      }).addTo(map);
 
       routingControlRef.current = control;
     } catch (err) {
@@ -172,22 +172,26 @@ const RiderOrderMap = ({ order }: Props) => {
 
   return (
     <div className="rounded-xl bg-white shadow-sm p-3">
-      <MapContainer
-        center={riderLocation}
-        zoom={14}
-        className="w-full h-80 rounded-lg"
-      >
+      <MapContainer center={riderLocation} zoom={14} className="w-full h-80 rounded-lg">
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <MapRecenter center={riderLocation} />
+
+        {/* Guaranteed Red Polyline */}
+        <Polyline
+          positions={[riderLocation, deliveryLocation]}
+          pathOptions={{ color: "#E23744", weight: 6, opacity: 0.9 }}
+        />
+
         <Marker position={riderLocation} icon={riderIcon}>
           <Popup>You (Rider)</Popup>
         </Marker>
         <Marker position={deliveryLocation} icon={deliveryIcon}>
           <Popup>Delivery Location</Popup>
         </Marker>
+
         <Routing from={riderLocation} to={deliveryLocation} />
       </MapContainer>
     </div>

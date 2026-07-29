@@ -1,10 +1,20 @@
 @import "tailwindcss";
 
 .leaflet-routing-container {
-  display: none !important; /* Hides routing panel text */
+  display: none !important;
 }
-path.leaflet-interactive {
+
+.leaflet-overlay-pane svg {
+  display: block !important;
+  z-index: 400 !important;
+}
+
+.leaflet-overlay-pane path,
+path.leaflet-interactive,
+path.leaflet-routing-line {
   stroke: #E23744 !important;
-  stroke-width: 6 !important;
+  stroke-width: 6px !important;
   stroke-opacity: 0.9 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
 }
