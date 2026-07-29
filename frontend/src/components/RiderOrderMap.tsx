@@ -91,7 +91,7 @@ const Routing = ({
           show: false,
           createMarker: () => null,
           router: RoutingObj.osrmv1({
-            serviceUrl: "https://router.project-osrm.org/route/v1",
+            serviceUrl: "https://routing.openstreetmap.de/routed-car/route/v1",
           }),
         }).addTo(map);
 
