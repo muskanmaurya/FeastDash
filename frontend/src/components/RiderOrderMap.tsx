@@ -44,7 +44,6 @@ const MapRecenter = ({ center }: { center: [number, number] }) => {
   return null;
 };
 
-// 2. Fixed Routing Component using useRef (Instantiates ONCE)
 const Routing = ({
   from,
   to,
@@ -55,68 +54,75 @@ const Routing = ({
   const map = useMap();
   const routingControlRef = useRef<any>(null);
 
-  // Initialize Routing Control ONCE when map mounts
   useEffect(() => {
     if (!map) return;
 
-    if (!L || !(L as any).Routing) {
-      console.warn("Leaflet Routing Machine is not ready yet.");
-      return;
-    }
+    let isMounted = true;
 
-    try {
-      const control = (L as any).Routing.control({
-        waypoints: [
-          L.latLng(from[0], from[1]),
-          L.latLng(to[0], to[1])
-        ],
-        lineOptions: {
-          styles: [{ color: "#E23744", weight: 6, opacity: 0.9 }],
-          extendToWaypoints: true,
-          missingRouteTolerance: 0,
-        },
-        addWaypoints: false,
-        draggableWaypoints: false,
-        fitSelectedRoutes: false,
-        show: false,
-        createMarker: () => null,
-        router: (L as any).Routing.osrmv1({
-          serviceUrl: "https://router.project-osrm.org/route/v1",
-        }),
-      }).addTo(map);
+    const initRouting = () => {
+      // Check if L.Routing is attached to Leaflet
+      const RoutingObj = (L as any).Routing;
 
-      // Add these 2 listeners to verify OSRM routing:
-      control.on('routesfound', (e: any) => {
-        console.log("✅ OSRM Route calculated along roads!", e.routes);
-      });
+      if (!RoutingObj || !RoutingObj.control) {
+        // If not ready yet, retry in 100ms
+        if (isMounted) {
+          setTimeout(initRouting, 100);
+        }
+        return;
+      }
 
-      control.on('routingerror', (e: any) => {
-        console.error("❌ OSRM API Failed (Straight line fallback active):", e);
-      });
+      // If control is already active, don't recreate
+      if (routingControlRef.current) return;
 
-      routingControlRef.current = control;
-    } catch (err) {
-      console.error("Leaflet Routing Error:", err);
-    }
+      try {
+        const control = RoutingObj.control({
+          waypoints: [
+            L.latLng(from[0], from[1]),
+            L.latLng(to[0], to[1])
+          ],
+          lineOptions: {
+            styles: [{ color: "#E23744", weight: 6, opacity: 0.9 }],
+            extendToWaypoints: true,
+            missingRouteTolerance: 0,
+          },
+          addWaypoints: false,
+          draggableWaypoints: false,
+          fitSelectedRoutes: false,
+          show: false,
+          createMarker: () => null,
+          router: RoutingObj.osrmv1({
+            serviceUrl: "https://router.project-osrm.org/route/v1",
+          }),
+        }).addTo(map);
+
+        routingControlRef.current = control;
+      } catch (err) {
+        console.error("Leaflet Routing Init Error:", err);
+      }
+    };
+
+    initRouting();
 
     return () => {
+      isMounted = false;
       if (map && routingControlRef.current) {
         try {
           map.removeControl(routingControlRef.current);
+          routingControlRef.current = null;
         } catch (e) {
-          console.warn("Leaflet cleanup warning caught safely", e);
+          // Safe cleanup
         }
       }
     };
-  }, [map]); // MUST ONLY contain [map]
+  }, [map]);
 
-  // Dynamically update waypoints without destroying the line layer
+  // Dynamically update waypoints as rider moves
   useEffect(() => {
     if (routingControlRef.current) {
       try {
         routingControlRef.current.setWaypoints([
-          L.latLng(from),
-          L.latLng(to),
+          L.latLng(from[0], from[1]),
+          L.latLng(to[0], to[1]),
         ]);
       } catch (err) {
         console.warn("Error updating waypoints:", err);
