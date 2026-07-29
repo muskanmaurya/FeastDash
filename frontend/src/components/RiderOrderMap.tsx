@@ -82,9 +82,17 @@ const Routing = ({
         createMarker: () => null,
         router: (L as any).Routing.osrmv1({
           serviceUrl: "https://router.project-osrm.org/route/v1",
-          profile: "driving", // Force driving/road routing profile!
         }),
       }).addTo(map);
+
+      // Add these 2 listeners to verify OSRM routing:
+      control.on('routesfound', (e: any) => {
+        console.log("✅ OSRM Route calculated along roads!", e.routes);
+      });
+
+      control.on('routingerror', (e: any) => {
+        console.error("❌ OSRM API Failed (Straight line fallback active):", e);
+      });
 
       routingControlRef.current = control;
     } catch (err) {
