@@ -57,88 +57,70 @@ const Routing = ({
   useEffect(() => {
     if (!map) return;
 
-    let isMounted = true;
+    // Validate valid numeric lat/lng coordinates before firing OSRM
+    if (!from || !to || isNaN(from[0]) || isNaN(from[1]) || isNaN(to[0]) || isNaN(to[1])) {
+      return;
+    }
 
-    const initRouting = () => {
-      // Check if L.Routing is attached to Leaflet
-      const RoutingObj = (L as any).Routing;
+    const RoutingObj = (L as any).Routing;
+    if (!RoutingObj || !RoutingObj.control) return;
 
-      if (!RoutingObj || !RoutingObj.control) {
-        // If not ready yet, retry in 100ms
-        if (isMounted) {
-          setTimeout(initRouting, 100);
-        }
-        return;
-      }
-
-      // If control is already active, don't recreate
-      if (routingControlRef.current) return;
-
+    // Clean up existing instance before recreating
+    if (routingControlRef.current) {
       try {
-        const control = RoutingObj.control({
-          waypoints: [
-            L.latLng(from[0], from[1]),
-            L.latLng(to[0], to[1])
-          ],
-          // 1. Static Road Line Styles
-          lineOptions: {
-            styles: [
-              { color: '#000000', opacity: 0.15, weight: 9 }, // Shadow
-              { color: '#E23744', opacity: 0.9, weight: 6 }   // Main Red Track
-            ],
-            extendToWaypoints: true,
-            missingRouteTolerance: 0,
-          },
-          // 2. Dragging Styles (Active when user drags a waypoint)
-          dragStyles: [
-            { color: 'black', opacity: 0.15, weight: 7 },
-            { color: 'white', opacity: 0.8, weight: 4 },
-            { color: 'orange', opacity: 1, weight: 2, dashArray: '7,12' }
-          ],
-          addWaypoints: false,
-          draggableWaypoints: true, // MUST BE true for dragStyles to work!
-          fitSelectedRoutes: false,
-          show: false,
-          createMarker: () => null,
-          router: RoutingObj.osrmv1({
-            serviceUrl: "https://routing.openstreetmap.de/routed-car/route/v1",
-          }),
-        }).addTo(map);
-
-        routingControlRef.current = control;
-      } catch (err) {
-        console.error("Leaflet Routing Init Error:", err);
+        map.removeControl(routingControlRef.current);
+      } catch (e) {
+        // ignore
       }
-    };
+    }
 
-    initRouting();
+    try {
+      const control = RoutingObj.control({
+        waypoints: [
+          L.latLng(Number(from[0]), Number(from[1])),
+          L.latLng(Number(to[0]), Number(to[1]))
+        ],
+        lineOptions: {
+          styles: [{ color: "#E23744", weight: 6, opacity: 0.9 }],
+          extendToWaypoints: true,
+          missingRouteTolerance: 100,
+        },
+        addWaypoints: false,
+        draggableWaypoints: false,
+        fitSelectedRoutes: false,
+        show: false,
+        createMarker: () => null,
+        // Using OpenStreetMap DE endpoint which doesn't block Vercel origins:
+        router: RoutingObj.osrmv1({
+          serviceUrl: "https://routing.openstreetmap.de/routed-car/route/v1",
+        }),
+      }).addTo(map);
+
+      // Debugging logs to verify OSRM in Console
+      control.on("routesfound", (e: any) => {
+        console.log("✅ REAL ROAD ROUTE FOUND:", e.routes);
+      });
+
+      control.on("routingerror", (e: any) => {
+        console.error("❌ OSRM ROUTE ERROR (Falling back to straight line):", e);
+      });
+
+      routingControlRef.current = control;
+    } catch (err) {
+      console.error("Routing error:", err);
+    }
 
     return () => {
-      isMounted = false;
       if (map && routingControlRef.current) {
         try {
           map.removeControl(routingControlRef.current);
           routingControlRef.current = null;
         } catch (e) {
-          // Safe cleanup
+          // safe cleanup
         }
       }
     };
-  }, [map]);
-
-  // Dynamically update waypoints as rider moves
-  useEffect(() => {
-    if (routingControlRef.current) {
-      try {
-        routingControlRef.current.setWaypoints([
-          L.latLng(from[0], from[1]),
-          L.latLng(to[0], to[1]),
-        ]);
-      } catch (err) {
-        console.warn("Error updating waypoints:", err);
-      }
-    }
-  }, [from, to]);
+  }, [map, from[0], from[1], to[0], to[1]]); // Trigger on coordinate change cleanly
 
   return null;
 };
