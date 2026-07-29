@@ -1,20 +1,13 @@
 @import "tailwindcss";
 
-.leaflet-routing-container {
-  display: none !important;
-}
-
+/* Prevent Tailwind v4 preflight from hiding Leaflet SVG paths */
 .leaflet-overlay-pane svg {
   display: block !important;
   z-index: 400 !important;
 }
 
-.leaflet-overlay-pane path,
-path.leaflet-interactive,
-path.leaflet-routing-line {
-  stroke: #E23744 !important;
-  stroke-width: 6px !important;
-  stroke-opacity: 0.9 !important;
+/* Force stroke properties on Leaflet interactive paths */
+.leaflet-overlay-pane path.leaflet-interactive {
   stroke-linecap: round !important;
   stroke-linejoin: round !important;
 }

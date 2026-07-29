@@ -80,13 +80,23 @@ const Routing = ({
             L.latLng(from[0], from[1]),
             L.latLng(to[0], to[1])
           ],
+          // 1. Static Road Line Styles
           lineOptions: {
-            styles: [{ color: "#E23744", weight: 6, opacity: 0.9 }],
+            styles: [
+              { color: '#000000', opacity: 0.15, weight: 9 }, // Shadow
+              { color: '#E23744', opacity: 0.9, weight: 6 }   // Main Red Track
+            ],
             extendToWaypoints: true,
             missingRouteTolerance: 0,
           },
+          // 2. Dragging Styles (Active when user drags a waypoint)
+          dragStyles: [
+            { color: 'black', opacity: 0.15, weight: 7 },
+            { color: 'white', opacity: 0.8, weight: 4 },
+            { color: 'orange', opacity: 1, weight: 2, dashArray: '7,12' }
+          ],
           addWaypoints: false,
-          draggableWaypoints: false,
+          draggableWaypoints: true, // MUST BE true for dragStyles to work!
           fitSelectedRoutes: false,
           show: false,
           createMarker: () => null,
