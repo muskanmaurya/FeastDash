@@ -1,21 +1,10 @@
 import type { IOrder } from "../types";
-import { useState, useEffect, useRef } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from "react-leaflet";
+import { useState, useEffect } from "react";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "leaflet-routing-machine";
-import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import axios from "axios";
 import { realtimeService } from "../config";
-
-/* eslint-disable @typescript-eslint/no-namespace */
-declare module "leaflet" {
-  namespace Routing {
-    function control(options: any): any;
-    function osrmv1(options: any): any;
-  }
-}
-/* eslint-enable @typescript-eslint/no-namespace */
 
 const riderIcon = new L.DivIcon({
   html: "🛵",
@@ -33,7 +22,7 @@ interface Props {
   order: IOrder;
 }
 
-// 1. Map Recenter Component to follow rider smoothly
+// Auto-recenter map on rider location
 const MapRecenter = ({ center }: { center: [number, number] }) => {
   const map = useMap();
   useEffect(() => {
@@ -44,89 +33,9 @@ const MapRecenter = ({ center }: { center: [number, number] }) => {
   return null;
 };
 
-const Routing = ({
-  from,
-  to,
-}: {
-  from: [number, number];
-  to: [number, number];
-}) => {
-  const map = useMap();
-  const routingControlRef = useRef<any>(null);
-
-  useEffect(() => {
-    if (!map) return;
-
-    // Validate valid numeric lat/lng coordinates before firing OSRM
-    if (!from || !to || isNaN(from[0]) || isNaN(from[1]) || isNaN(to[0]) || isNaN(to[1])) {
-      return;
-    }
-
-    const RoutingObj = (L as any).Routing;
-    if (!RoutingObj || !RoutingObj.control) return;
-
-    // Clean up existing instance before recreating
-    if (routingControlRef.current) {
-      try {
-        map.removeControl(routingControlRef.current);
-      } catch (e) {
-        // ignore
-      }
-    }
-
-    try {
-      const control = RoutingObj.control({
-        waypoints: [
-          L.latLng(Number(from[0]), Number(from[1])),
-          L.latLng(Number(to[0]), Number(to[1]))
-        ],
-        lineOptions: {
-          styles: [{ color: "#E23744", weight: 6, opacity: 0.9 }],
-          extendToWaypoints: true,
-          missingRouteTolerance: 100,
-        },
-        addWaypoints: false,
-        draggableWaypoints: false,
-        fitSelectedRoutes: false,
-        show: false,
-        createMarker: () => null,
-        // Using OpenStreetMap DE endpoint which doesn't block Vercel origins:
-        router: RoutingObj.osrmv1({
-          serviceUrl: "https://routing.openstreetmap.de/routed-car/route/v1",
-        }),
-      }).addTo(map);
-
-      // Debugging logs to verify OSRM in Console
-      control.on("routesfound", (e: any) => {
-        console.log("✅ REAL ROAD ROUTE FOUND:", e.routes);
-      });
-
-      control.on("routingerror", (e: any) => {
-        console.error("❌ OSRM ROUTE ERROR (Falling back to straight line):", e);
-      });
-
-      routingControlRef.current = control;
-    } catch (err) {
-      console.error("Routing error:", err);
-    }
-
-    return () => {
-      if (map && routingControlRef.current) {
-        try {
-          map.removeControl(routingControlRef.current);
-          routingControlRef.current = null;
-        } catch (e) {
-          // safe cleanup
-        }
-      }
-    };
-  }, [map, from[0], from[1], to[0], to[1]]); // Trigger on coordinate change cleanly
-
-  return null;
-};
-
 const RiderOrderMap = ({ order }: Props) => {
   const [riderLocation, setRiderLocation] = useState<[number, number] | null>(null);
+  const [routeCoordinates, setRouteCoordinates] = useState<[number, number][]>([]);
 
   if (order.deliveryAddress.latitude == null || order.deliveryAddress.longitude == null) {
     return null;
@@ -137,6 +46,7 @@ const RiderOrderMap = ({ order }: Props) => {
     order.deliveryAddress.longitude,
   ];
 
+  // 1. Poll GPS Location every 5 seconds
   useEffect(() => {
     const fetchLocation = () => {
       navigator.geolocation.getCurrentPosition(
@@ -144,13 +54,12 @@ const RiderOrderMap = ({ order }: Props) => {
           const latitude = pos.coords.latitude;
           const longitude = pos.coords.longitude;
           setRiderLocation([latitude, longitude]);
-          console.log("📍 GPS Ping Triggered at:", new Date().toLocaleTimeString(), pos.coords);
 
           axios.post(
             `${realtimeService}/api/v1/internal/emit`,
             {
               event: "rider:location",
-              room: `order:${order._id}`, // Fixed room target to match Order ID
+              room: `order:${order._id}`,
               payload: { latitude, longitude },
             },
             {
@@ -163,16 +72,47 @@ const RiderOrderMap = ({ order }: Props) => {
         (err) => console.log("Location error:", err),
         {
           enableHighAccuracy: true,
-          maximumAge: 0, // Force fresh GPS coordinates on every check
+          maximumAge: 0,
           timeout: 5000,
         }
       );
     };
-    fetchLocation();
-    const interval = setInterval(fetchLocation, 5000); // Fixed interval to 5 seconds (5000ms)
 
+    fetchLocation();
+    const interval = setInterval(fetchLocation, 5000);
     return () => clearInterval(interval);
   }, [order._id]);
+
+  // 2. Fetch Street Directions (OSRM API) whenever Rider or Dropoff Location changes
+  useEffect(() => {
+    if (!riderLocation) return;
+
+    const getDrivingRoute = async () => {
+      try {
+        // OSRM expects coordinates formatted as: longitude,latitude
+        const start = `${riderLocation[1]},${riderLocation[0]}`;
+        const end = `${deliveryLocation[1]},${deliveryLocation[0]}`;
+
+        const response = await fetch(
+          `https://routing.openstreetmap.de/routed-car/route/v1/driving/${start};${end}?overview=full&geometries=geojson`
+        );
+        const data = await response.json();
+
+        if (data.routes && data.routes.length > 0) {
+          // OSRM GeoJSON gives [lng, lat], convert back to Leaflet [lat, lng]
+          const coords = data.routes[0].geometry.coordinates.map(
+            (coord: [number, number]) => [coord[1], coord[0]] as [number, number]
+          );
+          setRouteCoordinates(coords);
+          console.log("✅ Road coordinates loaded successfully:", coords.length, "points");
+        }
+      } catch (error) {
+        console.error("Error fetching road directions:", error);
+      }
+    };
+
+    getDrivingRoute();
+  }, [riderLocation?.[0], riderLocation?.[1]]);
 
   if (!riderLocation) return null;
 
@@ -185,11 +125,13 @@ const RiderOrderMap = ({ order }: Props) => {
         />
         <MapRecenter center={riderLocation} />
 
-        {/* Guaranteed Red Polyline */}
-        <Polyline
-          positions={[riderLocation, deliveryLocation]}
-          pathOptions={{ color: "#E23744", weight: 6, opacity: 0.9 }}
-        />
+        {/* 3. Render Polyline using REAL street coordinates array! */}
+        {routeCoordinates.length > 0 && (
+          <Polyline
+            positions={routeCoordinates}
+            pathOptions={{ color: "#E23744", weight: 6, opacity: 0.9 }}
+          />
+        )}
 
         <Marker position={riderLocation} icon={riderIcon}>
           <Popup>You (Rider)</Popup>
@@ -197,8 +139,6 @@ const RiderOrderMap = ({ order }: Props) => {
         <Marker position={deliveryLocation} icon={deliveryIcon}>
           <Popup>Delivery Location</Popup>
         </Marker>
-
-        <Routing from={riderLocation} to={deliveryLocation} />
       </MapContainer>
     </div>
   );
