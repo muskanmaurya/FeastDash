@@ -83,7 +83,8 @@ interface Props{
 
 const UserOrderMap = ({ riderLocation, deliveryLocation }: Props) => {
 
-
+console.log("riderLocation", riderLocation)
+console.log("deliveryLocation", deliveryLocation)
 
 
 
