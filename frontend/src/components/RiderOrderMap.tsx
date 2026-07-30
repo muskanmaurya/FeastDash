@@ -46,7 +46,6 @@ const RiderOrderMap = ({ order }: Props) => {
     order.deliveryAddress.longitude,
   ];
 
-  // 1. Poll GPS Location every 5 seconds
   useEffect(() => {
     const fetchLocation = () => {
       navigator.geolocation.getCurrentPosition(
@@ -83,7 +82,6 @@ const RiderOrderMap = ({ order }: Props) => {
     return () => clearInterval(interval);
   }, [order._id]);
 
-  // 2. Fetch Street Directions (OSRM API) whenever Rider or Dropoff Location changes
   useEffect(() => {
     if (!riderLocation) return;
 
@@ -125,7 +123,6 @@ const RiderOrderMap = ({ order }: Props) => {
         />
         <MapRecenter center={riderLocation} />
 
-        {/* 3. Render Polyline using REAL street coordinates array! */}
         {routeCoordinates.length > 0 && (
           <Polyline
             positions={routeCoordinates}

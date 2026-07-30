@@ -1,113 +1,100 @@
-import { useEffect, useRef} from 'react'
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { useEffect, useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import * as L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import 'leaflet-routing-machine';
-
-/* eslint-disable @typescript-eslint/no-namespace */
-declare module 'leaflet' {
-    namespace Routing {
-        function control(options: any): any;
-        function osrmv1(options: any): any;
-    }
-}
-/* eslint-enable @typescript-eslint/no-namespace */
 
 const riderIcon = new L.DivIcon({
     html: "🛵",
     iconSize: [30, 30],
-    className:"",
-})
+    className: "",
+});
 
 const deliveryIcon = new L.DivIcon({
-    html:"📦",
-    iconSize:[30,30],
-    className:"",
-})
+    html: "📦",
+    iconSize: [30, 30],
+    className: "",
+});
 
-
-const Routing = ({
-    from,
-    to
-}:{
-    from: [number, number], //latitude and longitude of the restaurant
-    to: [number, number] //latitude and longitude of the delivery address
-})=>{
+// Auto-recenter map when rider moves
+const MapRecenter = ({ center }: { center: [number, number] }) => {
     const map = useMap();
-
-    const routingControlRef = useRef<any>(null);
-
     useEffect(() => {
-        if (!map) return;
-
-        const control = L.Routing.control({
-            waypoints: [L.latLng(from), L.latLng(to)],
-            lineOptions: { styles: [{ color: "#E23744", weight: 5 }] },
-            addWayPoints: false,
-            draggableWayPoints: false,
-            show: false,
-            createMarker: () => null,
-            router: L.Routing.osrmv1({
-                serviceUrl: "https://router.project-osrm.org/route/v1",
-            }),
-        }).addTo(map);
-
-        routingControlRef.current = control;
-
-        return () => {
-            if (map && routingControlRef.current) {
-                try {
-                    map.removeControl(routingControlRef.current);
-                } catch (e) {
-                    console.warn("Leaflet cleanup warning caught safely", e);
-                }
-            }
-        };
-    }, [map]); 
-
-    // Dynamically update waypoints when coordinates change without re-creating the control
-    useEffect(() => {
-        if (routingControlRef.current) {
-            routingControlRef.current.setWaypoints([L.latLng(from), L.latLng(to)]);
+        if (map && center) {
+            map.panTo(center);
         }
-    }, [from, to]);
-
+    }, [center, map]);
     return null;
 };
 
-
-interface Props{
+interface Props {
     riderLocation: [number, number];
     deliveryLocation: [number, number];
 }
 
 const UserOrderMap = ({ riderLocation, deliveryLocation }: Props) => {
+    const [routeCoordinates, setRouteCoordinates] = useState<[number, number][]>([]);
 
-console.log("riderLocation", riderLocation)
-console.log("deliveryLocation", deliveryLocation)
+    // Fetch road-snapped coordinates whenever rider moves
+    useEffect(() => {
+        if (!riderLocation || !deliveryLocation) return;
 
+        const getDrivingRoute = async () => {
+            try {
+                // OSRM expects coordinates as longitude,latitude
+                const start = `${riderLocation[1]},${riderLocation[0]}`;
+                const end = `${deliveryLocation[1]},${deliveryLocation[0]}`;
 
+                const response = await fetch(
+                    `https://routing.openstreetmap.de/routed-car/route/v1/driving/${start};${end}?overview=full&geometries=geojson`
+                );
+                const data = await response.json();
 
-  return (
-      <div className="rounded-xl bg-white shadow-sm p-3" >
-          <MapContainer 
-          center={riderLocation}
-          zoom={14}
-          className="w-full h-80 rounded-lg"
-          >
-              <TileLayer attribution="&copy; OpenStreetMap"
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              <Marker position={riderLocation} icon={riderIcon} >
-                  <Popup>Rider</Popup>
-              </Marker>
-              <Marker position={deliveryLocation} icon={deliveryIcon} >
-                  <Popup>Delivery Location</Popup>
-              </Marker>
-              <Routing from={riderLocation} to={deliveryLocation} />
-          </MapContainer>    
-      </div>
-    )
-}
+                if (data.routes && data.routes.length > 0) {
+                    const coords = data.routes[0].geometry.coordinates.map(
+                        (coord: [number, number]) => [coord[1], coord[0]] as [number, number]
+                    );
+                    setRouteCoordinates(coords);
+                }
+            } catch (error) {
+                console.error("UserOrderMap: Error fetching road route:", error);
+            }
+        };
 
-export default UserOrderMap
+        getDrivingRoute();
+    }, [riderLocation[0], riderLocation[1], deliveryLocation[0], deliveryLocation[1]]);
+
+    return (
+        <div className="rounded-xl bg-white shadow-sm p-3">
+            <MapContainer 
+                center={riderLocation}
+                zoom={14}
+                className="w-full h-80 rounded-lg"
+            >
+                <TileLayer 
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                
+                {/* Dynamically recenter as rider travels */}
+                <MapRecenter center={riderLocation} />
+
+                {/* Road-snapped Red Polyline */}
+                {routeCoordinates.length > 0 && (
+                    <Polyline
+                        positions={routeCoordinates}
+                        pathOptions={{ color: "#E23744", weight: 6, opacity: 0.9 }}
+                    />
+                )}
+
+                <Marker position={riderLocation} icon={riderIcon}>
+                    <Popup>Rider</Popup>
+                </Marker>
+                <Marker position={deliveryLocation} icon={deliveryIcon}>
+                    <Popup>Delivery Location</Popup>
+                </Marker>
+            </MapContainer>    
+        </div>
+    );
+};
+
+export default UserOrderMap;

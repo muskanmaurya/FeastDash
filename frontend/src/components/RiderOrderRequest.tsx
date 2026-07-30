@@ -55,7 +55,7 @@ const RiderOrderRequest = ({ orderId, onAccepted }: Props) => {
         <button
         disabled={accepting}
         onClick={acceptOrder}
-        className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md w-full"
+        className="bg-green-500 hover:bg-green-600 text-white py-2 cursor-pointer px-4 rounded-md w-full"
         >{accepting? "Accepting..." : "Accept Order"}</button>
     </div>
   )
