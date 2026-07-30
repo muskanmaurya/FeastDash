@@ -8,15 +8,15 @@ import { BiCheckCircle, BiMap, BiReceipt, BiTimeFive } from "react-icons/bi";
 import UserOrderMap from "../components/UserOrderMap";
 
 const statusConfig = (status: string) => {
-  switch (status) {
-    case "delivered":
-      return "bg-green-50 border border-green-100 text-green-700";
-    case "placed":
-    case "accepted":
-      return "bg-yellow-50 border border-yellow-100 text-yellow-700";
-    default:
-      return "bg-blue-50 border border-blue-100 text-blue-700";
-  }
+    switch (status) {
+        case "delivered":
+            return "bg-green-50 border border-green-100 text-green-700";
+        case "placed":
+        case "accepted":
+            return "bg-yellow-50 border border-yellow-100 text-yellow-700";
+        default:
+            return "bg-blue-50 border border-blue-100 text-blue-700";
+    }
 };
 
 const OrderPage = () => {
@@ -24,7 +24,7 @@ const OrderPage = () => {
     const { socket } = useSocket();
     const [order, setOrder] = useState<IOrder | null>(null);
     const [loading, setLoading] = useState(true);
-    
+
 
     const fetchOrder = async () => {
         try {
@@ -62,18 +62,19 @@ const OrderPage = () => {
         };
     }, [socket]);
 
-    
-    useEffect(()=>{
+
+    useEffect(() => {
         if (!socket || !id) return;
-        
+
         socket.emit("join", `user:${id}`);
         socket.emit("join", `order:${id}`);
-        
-        return () =>{
+
+        return () => {
             socket.emit("leave", `user:${id}`)
             socket.emit("leave", `order:${id}`)
         }
-    },[socket, id])
+    }, [socket, id])
+
 
 
     const [riderLocation, setRiderLocation] = useState<[number, number] | null>(null);
@@ -81,9 +82,15 @@ const OrderPage = () => {
     useEffect(() => {
         if (!socket) return;
 
-        const onRiderLocation = ({ latitude, longitude }: any) => {
-            console.log("Rider Location received:", latitude, longitude);
-            setRiderLocation([latitude, longitude]); 
+        const onRiderLocation = (data: any) => {
+            // Handle payload whether sent directly or nested inside a payload wrapper
+            const lat = data?.latitude ?? data?.payload?.latitude;
+            const lng = data?.longitude ?? data?.payload?.longitude;
+
+            if (lat && lng) {
+                console.log("📍 Rider Location Received on User Map:", lat, lng);
+                setRiderLocation([lat, lng]);
+            }
         };
 
         socket.on("rider:location", onRiderLocation);
@@ -92,7 +99,6 @@ const OrderPage = () => {
             socket.off("rider:location", onRiderLocation);
         };
     }, [socket]);
-
 
     if (loading) {
         return (
@@ -122,7 +128,7 @@ const OrderPage = () => {
 
     return (
         <div className="mx-auto max-w-2xl px-4 py-8 antialiased space-y-6">
-            
+
             {/* Upper Global Invoice Header Row */}
             <div className="flex items-center justify-between border-b border-gray-100 pb-4">
                 <div>
@@ -201,11 +207,11 @@ const OrderPage = () => {
                 </div>
             </div>
             {
-                (order.status === "rider-assigned" || 
-                order.status === "picked-up") && 
-                (riderLocation ? 
-                <UserOrderMap riderLocation={riderLocation} deliveryLocation={[order.deliveryAddress.latitude!, order.deliveryAddress.longitude!]} /> : 
-                <p>Waiting for rider location...</p>)
+                (order.status === "rider-assigned" ||
+                    order.status === "picked-up") &&
+                (riderLocation ?
+                    <UserOrderMap riderLocation={riderLocation} deliveryLocation={[order.deliveryAddress.latitude!, order.deliveryAddress.longitude!]} /> :
+                    <p>Waiting for rider location...</p>)
             }
 
         </div>
