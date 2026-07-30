@@ -79,26 +79,30 @@ const OrderPage = () => {
 
     const [riderLocation, setRiderLocation] = useState<[number, number] | null>(null);
 
-    useEffect(() => {
-        if (!socket) return;
+useEffect(() => {
+    if (!socket) return;
 
-        const onRiderLocation = (data: any) => {
-            // Handle payload whether sent directly or nested inside a payload wrapper
-            const lat = data?.latitude ?? data?.payload?.latitude;
-            const lng = data?.longitude ?? data?.payload?.longitude;
+    const onRiderLocation = (data: any) => {
+        console.log("📍 RAW Rider Location Event Received:", data);
+        
+        // Handle both direct { latitude, longitude } and wrapped { payload: { latitude, longitude } }
+        const lat = data?.latitude ?? data?.payload?.latitude;
+        const lng = data?.longitude ?? data?.payload?.longitude;
 
-            if (lat && lng) {
-                console.log("📍 Rider Location Received on User Map:", lat, lng);
-                setRiderLocation([lat, lng]);
-            }
-        };
+        if (lat != null && lng != null) {
+            console.log("✅ Setting Rider Location:", lat, lng);
+            setRiderLocation([Number(lat), Number(lng)]);
+        } else {
+            console.warn("⚠️ Received location ping but coordinates were undefined:", data);
+        }
+    };
 
-        socket.on("rider:location", onRiderLocation);
+    socket.on("rider:location", onRiderLocation);
 
-        return () => {
-            socket.off("rider:location", onRiderLocation);
-        };
-    }, [socket]);
+    return () => {
+        socket.off("rider:location", onRiderLocation);
+    };
+}, [socket]);
 
     if (loading) {
         return (
