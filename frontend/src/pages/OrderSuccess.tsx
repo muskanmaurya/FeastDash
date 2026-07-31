@@ -1,4 +1,4 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { utilsService } from "../config";
 import axios from "axios";
 import toast from "react-hot-toast";
