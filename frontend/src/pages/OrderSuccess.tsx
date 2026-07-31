@@ -1,4 +1,4 @@
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { utilsService } from "../config";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -17,6 +17,7 @@ const OrderSuccess = () => {
                 await axios.post(`${utilsService}/api/payment/stripe/verify`, {sessionId});
                 
                 toast.success("Payment successful! 🎉");
+
             }catch(error){
                 console.error("Error verifying payment:", error);
                 toast.error("Payment verification failed. Please contact support.");

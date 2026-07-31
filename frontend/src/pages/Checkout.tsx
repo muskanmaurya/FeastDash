@@ -167,6 +167,7 @@ const Checkout = () => {
         }else {
           toast.error("Failed to initiate Stripe payment. Please try again.");
         }
+
       }catch(error){
         console.error("Error initiating Stripe payment:", error);
         toast.error("Error initiating Stripe payment. Please try again.");

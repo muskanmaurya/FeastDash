@@ -21,25 +21,14 @@ const Cart = () => {
         </div>
     }
 
-    // const restaurant = cart[0].restaurantId as IRestaurant;
-
-    // const deliveryFee = subTotal < 250 ? 49 : 0;
-
-    // const platformFee = subTotal * 0.05 | 7;
-
-    // const grandTotal = subTotal + deliveryFee + platformFee;
-
-    // 🟢 Open Cart.tsx and replace the pricing calculation block:
+   
 
 const restaurant = cart[0].restaurantId as IRestaurant;
 
-// 1. Safe delivery check comparison math
 const deliveryFee = subTotal < 250 ? 49 : 0;
 
-// 2. Fix Platform Fee: Use standard math rules or standard logical fallback (||)
 const platformFee = Math.round(subTotal * 0.05) || 7; 
 
-// 3. Grand Total Calculation
 const grandTotal = subTotal + deliveryFee + platformFee;
 
     const increaseQty = async (itemId: string) => {
@@ -153,7 +142,6 @@ const grandTotal = subTotal + deliveryFee + platformFee;
     </div>
     <div className="flex justify-between text-sm">
         <span>Subtotal</span>
-        {/* 🚀 FIX: Print 'subTotal' here instead of 'grandTotal' */}
         <span>Rs.{subTotal}</span> 
     </div>
     <div className="flex justify-between text-sm">

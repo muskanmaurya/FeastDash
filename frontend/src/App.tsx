@@ -55,7 +55,7 @@ function App() {
         <Route path = '/' element = {<Home/>}/> 
         <Route path = '/orders' element = {<Orders/>}/> 
         <Route path = '/orders/:id' element = {<OrderPage/>}/> 
-        <Route path = '/ordersuccess' element = {<OrderSuccess/>}/> 
+        <Route path = '/ordersuccess' element = {<OrderSuccess/>}/>
         <Route path = '/paymentsuccess/:id' element = {<PaymentSuccess/>}/> 
         <Route path = '/addresses' element = {<AddAddressPage/>}/> 
         <Route path = '/checkout' element = {<Checkout/>}/> 
