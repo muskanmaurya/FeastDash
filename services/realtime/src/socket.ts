@@ -53,6 +53,20 @@ export const initSocket = (server: http.Server)=>{
         console.log(`User connected: ${userId}`);
         console.log("Socket room: ",[...socket.rooms]);
 
+        socket.on("join", (room: string) => {
+            if (room) {
+                socket.join(room);
+                console.log(`📌 Socket ${socket.id} joined room: ${room}`);
+            }
+        });
+
+        socket.on("leave", (room: string) => {
+            if (room) {
+                socket.leave(room);
+                console.log(`🚪 Socket ${socket.id} left room: ${room}`);
+            }
+        });
+
         socket.on("disconnect",()=>{
             console.log(`User disconnected: ${userId}`);
         })

@@ -398,7 +398,6 @@ const RiderDashboard = () => {
                 <div className="mx-auto max-w-md px-4 space-y-4" >
                     <RiderCurrentOrder order={currentOrder} onStatusUpdate={fetchCurrentOrder} />
                     <RiderOrderMap order={currentOrder} />
-
                 </div>
             )
         }
