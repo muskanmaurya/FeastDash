@@ -25,19 +25,19 @@ Key features include high-frequency GPS tracking with **Leaflet GeoJSON routing*
 
 *Real-time Socket.IO synchronization across Customer, Seller, and Rider apps.*
 
-<video src="https://github.com/user-attachments/assets/24837211-aa28-468a-9aeb-f10510b7b29e" controls width="100%"></video>
+[▶ Watch Real-time tracking Video](https://github.com/user-attachments/assets/dae5a1e6-4eb9-44f1-b133-c3e7aeaf444d)
 
 ### 2. Interactive Geocoding & Payment Processing
 
 *Leaflet address selection, dynamic fee calculation, and Stripe/Razorpay integration.*
 
-<video src="https://github.com/user-attachments/assets/618c55c6-22f2-4286-bdc5-f8fab3ff5bc0" controls width="100%"></video>
+[▶ Watch Checkout Demo Video](https://github.com/user-attachments/assets/618c55c6-22f2-4286-bdc5-f8fab3ff5bc0)
 
 ### 3. Multi-Role Onboarding & Management
 
 *Seller onboarding, rider registration, and admin approval workflows.*
 
-<video src="https://github.com/user-attachments/assets/db9f6d98-4200-4e36-a225-fe7d3c825aad" controls width="100%"></video>
+[▶ Watch Multi-Role Onboarding & Management Video](https://github.com/user-attachments/assets/92ba666a-ff43-4b49-b1ac-91e0d181e488)
 
 ---
 
